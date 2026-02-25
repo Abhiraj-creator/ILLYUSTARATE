@@ -2,7 +2,6 @@ import { NavLink } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Settings, 
-  Sparkles,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
@@ -21,13 +20,17 @@ export function Sidebar() {
 
   return (
     <aside 
-      className={`bg-slate-800 border-r border-slate-700 flex flex-col transition-all duration-300 ${
+      className={`bg-slate-800 border-r border-slate-700 flex flex-col h-screen transition-all duration-300 ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-slate-700">
-        <Sparkles className="w-6 h-6 text-indigo-500 flex-shrink-0" />
+        <img 
+          src="/logo.jpg" 
+          alt="ILLYUSTRATE"
+          className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+        />
         {!collapsed && (
           <span className="ml-3 font-bold text-lg text-white truncate">
             {APP_NAME}

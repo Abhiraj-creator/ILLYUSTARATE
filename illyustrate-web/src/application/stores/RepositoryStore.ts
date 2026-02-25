@@ -164,14 +164,25 @@ export const useRepositoryStore = create<RepositoryState>()((set, get) => ({
   },
 
   updateRepositoryStatus: (id, status) => {
-    set(state => ({
-      repositories: state.repositories.map(r =>
-        r.id === id ? Object.assign(Object.create(Object.getPrototypeOf(r)), r, { status }) : r
-      ),
-      currentRepository: state.currentRepository?.id === id
-        ? Object.assign(Object.create(Object.getPrototypeOf(state.currentRepository)), state.currentRepository, { status })
-        : state.currentRepository,
-    }));
+    set(state => {
+      const updateRepo = (r: Repository) => {
+        // Create new Repository instance with updated status
+        return new Repository({
+          ...r,
+          status,
+          analyzedAt: status === 'completed' ? new Date() : r.analyzedAt,
+        });
+      };
+
+      return {
+        repositories: state.repositories.map(r =>
+          r.id === id ? updateRepo(r) : r
+        ),
+        currentRepository: state.currentRepository?.id === id
+          ? updateRepo(state.currentRepository)
+          : state.currentRepository,
+      };
+    });
   },
 
   startAnalysis: async (repositoryId: string) => {

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, memo } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@application/stores/AuthStore'
 import { MainLayout } from '@presentation/layouts/MainLayout'
@@ -7,6 +7,11 @@ import { DashboardPage } from '@presentation/pages/DashboardPage'
 import { RepositoryPage } from '@presentation/pages/RepositoryPage'
 import { SettingsPage } from '@presentation/pages/SettingsPage'
 import { ROUTES } from '@shared/constants'
+
+// Memoized page components for better performance
+const MemoizedDashboard = memo(DashboardPage)
+const MemoizedRepository = memo(RepositoryPage)
+const MemoizedSettings = memo(SettingsPage)
 
 function App() {
   const { checkSession, isLoading, isAuthenticated } = useAuthStore()
@@ -32,19 +37,19 @@ function App() {
       <Route element={<MainLayout />}>
         <Route 
           path={ROUTES.DASHBOARD} 
-          element={isAuthenticated ? <DashboardPage /> : <Navigate to={ROUTES.LOGIN} />} 
+          element={isAuthenticated ? <MemoizedDashboard /> : <Navigate to={ROUTES.LOGIN} />} 
         />
         <Route 
           path={ROUTES.REPOSITORY} 
-          element={isAuthenticated ? <RepositoryPage /> : <Navigate to={ROUTES.LOGIN} />} 
+          element={isAuthenticated ? <MemoizedRepository /> : <Navigate to={ROUTES.LOGIN} />} 
         />
         <Route 
           path={ROUTES.GRAPH} 
-          element={isAuthenticated ? <RepositoryPage /> : <Navigate to={ROUTES.LOGIN} />} 
+          element={isAuthenticated ? <MemoizedRepository /> : <Navigate to={ROUTES.LOGIN} />} 
         />
         <Route 
           path={ROUTES.SETTINGS} 
-          element={isAuthenticated ? <SettingsPage /> : <Navigate to={ROUTES.LOGIN} />} 
+          element={isAuthenticated ? <MemoizedSettings /> : <Navigate to={ROUTES.LOGIN} />} 
         />
         <Route 
           path={ROUTES.HOME} 

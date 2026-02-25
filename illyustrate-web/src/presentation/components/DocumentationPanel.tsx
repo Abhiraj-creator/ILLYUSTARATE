@@ -175,9 +175,114 @@ Generates a unique identifier.
   }
 
   return (
-    <div className="h-full flex">
+    <div className="h-full flex flex-col lg:flex-row">
+      {/* Mobile: Show doc list or content based on selection */}
+      <div className={`lg:hidden h-full ${selectedDoc ? 'hidden' : 'block'}`}>
+        {/* Mobile Doc List */}
+        <div className="h-full border-r border-slate-700 bg-slate-900 overflow-y-auto">
+          <div className="p-4 border-b border-slate-700">
+            <h3 className="text-sm font-medium text-white">Documentation</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              {docs.length} files documented
+            </p>
+          </div>
+          <div className="py-2">
+            {docs.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => setSelectedDoc(doc)}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-800 transition-colors ${
+                  selectedDoc?.id === doc.id ? 'bg-slate-800 border-l-2 border-indigo-500' : ''
+                }`}
+              >
+                {getFileIcon(doc.filePath)}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-300 truncate">{doc.filePath}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      doc.confidence > 0.9 ? 'bg-emerald-500/20 text-emerald-400' :
+                      doc.confidence > 0.7 ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-red-500/20 text-red-400'
+                    }`}>
+                      {Math.round(doc.confidence * 100)}%
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-600" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: Doc Content with back button */}
+      <div className={`lg:hidden h-full ${selectedDoc ? 'block' : 'hidden'}`}>
+        <div className="h-full overflow-y-auto bg-slate-900">
+          {selectedDoc ? (
+            <div className="p-4">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <button 
+                  onClick={() => setSelectedDoc(null)}
+                  className="text-slate-400 hover:text-white text-sm"
+                >
+                  ← Back
+                </button>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                <div>
+                  <h1 className="text-xl font-bold text-white mb-1">
+                    {selectedDoc.filePath.split('/').pop()}
+                  </h1>
+                  <p className="text-sm text-slate-400">{selectedDoc.filePath}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleFeedback(true)}
+                    className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition-colors"
+                  >
+                    <ThumbsUp className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleFeedback(false)}
+                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+                  >
+                    <ThumbsDown className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="bg-slate-800/50 rounded-lg p-4 mb-4">
+                <h2 className="text-sm font-medium text-slate-300 mb-2">Summary</h2>
+                <p className="text-slate-400 text-sm">{selectedDoc.summary}</p>
+              </div>
+
+              {/* Content */}
+              <div className="text-slate-300 whitespace-pre-wrap text-sm">
+                {selectedDoc.content}
+              </div>
+
+              {/* Metadata */}
+              <div className="mt-6 pt-4 border-t border-slate-700">
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>Generated on {selectedDoc.generatedAt.toLocaleDateString()}</span>
+                  <span>Confidence: {Math.round(selectedDoc.confidence * 100)}%</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center text-slate-500">
+              Select a file to view its documentation
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop: Side-by-side layout */}
       {/* File List */}
-      <div className="w-80 border-r border-slate-700 bg-slate-900 overflow-y-auto">
+      <div className="hidden lg:block w-80 border-r border-slate-700 bg-slate-900 overflow-y-auto">
         <div className="p-4 border-b border-slate-700">
           <h3 className="text-sm font-medium text-white">Documentation</h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -213,7 +318,7 @@ Generates a unique identifier.
       </div>
 
       {/* Documentation Content */}
-      <div className="flex-1 overflow-y-auto bg-slate-900">
+      <div className="hidden lg:block flex-1 overflow-y-auto bg-slate-900">
         {selectedDoc ? (
           <div className="max-w-3xl mx-auto p-8">
             {/* Header */}

@@ -26,7 +26,7 @@ export function RepositoryPage() {
   const { owner, name } = useParams<{ owner: string; name: string }>()
   const [activeTab, setActiveTab] = useState<Tab>('graph')
   
-  const { repositories, setCurrentRepository } = useRepositoryStore()
+  const { repositories, setCurrentRepository, updateRepositoryStatus } = useRepositoryStore()
   const { currentGraph, loadGraph, generateGraph, isLoading } = useGraphStore()
 
   const fullName = `${owner}/${name}`
@@ -55,9 +55,19 @@ export function RepositoryPage() {
         return
       }
       
+      // Update repository status to show it's being analyzed
+      updateRepositoryStatus(repo.id, 'analyzing')
+      
+      // Generate the graph
       await generateGraph(repo.id, owner, name, accessToken)
+      
+      // Update repository status to show analysis is complete
+      updateRepositoryStatus(repo.id, 'completed')
+      
     } catch (error) {
       console.error('Failed to analyze repository:', error)
+      // Reset analyzing state on error
+      updateRepositoryStatus(repo.id, 'failed')
       alert('Failed to analyze repository. Please try again.')
     }
   }
@@ -117,20 +127,20 @@ export function RepositoryPage() {
             )}
           </div>
 
-          {/* Tabs - scrollable on mobile */}
+          {/* Tabs - scrollable on mobile, icon-only on small screens */}
           <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                {tab.label}
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
           </div>

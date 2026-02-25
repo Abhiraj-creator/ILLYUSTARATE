@@ -127,6 +127,13 @@ export function FileExplorer({ repository }: FileExplorerProps) {
 
   const loadFileContent = async (node: FileNode) => {
     setSelectedFile(node)
+    
+    // Handle image and video files specially
+    if (isImageFile(node.name) || isVideoFile(node.name)) {
+      setFileContent('') // Clear content for media files
+      return
+    }
+    
     setFileContent('Loading...')
     
     try {
@@ -157,10 +164,27 @@ export function FileExplorer({ repository }: FileExplorerProps) {
   }
 
   const getFileIcon = (name: string) => {
-    if (name.endsWith('.tsx') || name.endsWith('.ts')) return <FileCode className="w-4 h-4 text-blue-400" />
+    if (name.endsWith('.tsx') || name.endsWith('.ts') || name.endsWith('.js') || name.endsWith('.jsx')) return <FileCode className="w-4 h-4 text-blue-400" />
     if (name.endsWith('.json')) return <FileJson className="w-4 h-4 text-yellow-400" />
     if (name.endsWith('.md')) return <FileType className="w-4 h-4 text-white" />
+    if (isImageFile(name)) return <div className="w-4 h-4 bg-purple-500 rounded text-xs flex items-center justify-center text-white">IMG</div>
+    if (isVideoFile(name)) return <div className="w-4 h-4 bg-red-500 rounded text-xs flex items-center justify-center text-white">VID</div>
     return <File className="w-4 h-4 text-slate-400" />
+  }
+
+  const isImageFile = (name: string) => {
+    const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico']
+    return imageExts.some(ext => name.toLowerCase().endsWith(ext))
+  }
+
+  const isVideoFile = (name: string) => {
+    const videoExts = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv']
+    return videoExts.some(ext => name.toLowerCase().endsWith(ext))
+  }
+
+  const isTextFile = (name: string) => {
+    const textExts = ['.txt', '.md', '.json', '.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.scss', '.yaml', '.yml', '.xml', '.csv', '.log', '.env', '.gitignore', '.swift', '.java', '.py', '.go', '.rs', '.c', '.cpp', '.h', '.php', '.rb', '.sh', '.bat']
+    return textExts.some(ext => name.toLowerCase().endsWith(ext))
   }
 
   const renderTree = (nodes: FileNode[], depth = 0) => {
@@ -208,9 +232,53 @@ export function FileExplorer({ repository }: FileExplorerProps) {
   }
 
   return (
-    <div className="h-full flex">
+    <div className="h-full flex flex-col lg:flex-row">
+      {/* Mobile: Show file tree or content based on selection */}
+      <div className={`lg:hidden h-full ${selectedFile ? 'hidden' : 'block'}`}>
+        {/* Mobile File Tree */}
+        <div className="h-full border-r border-slate-700 bg-slate-900 overflow-y-auto">
+          <div className="p-3 border-b border-slate-700">
+            <h3 className="text-sm font-medium text-white">Files</h3>
+          </div>
+          <div className="py-2">{renderTree(fileTree)}</div>
+        </div>
+      </div>
+
+      {/* Mobile: File Content with back button */}
+      <div className={`lg:hidden h-full ${selectedFile ? 'block' : 'hidden'}`}>
+        <div className="h-full bg-slate-900 overflow-auto">
+          {selectedFile ? (
+            <div className="h-full flex flex-col">
+              <div className="px-4 py-3 border-b border-slate-700 bg-slate-800/50 flex items-center gap-3">
+                <button 
+                  onClick={() => setSelectedFile(null)}
+                  className="text-slate-400 hover:text-white text-sm flex items-center gap-1"
+                >
+                  ← Back
+                </button>
+                <span className="text-sm text-slate-300 truncate">{selectedFile.path}</span>
+              </div>
+              <div className="flex-1 overflow-auto">
+                <FileContentViewer 
+                  file={selectedFile} 
+                  content={fileContent}
+                  owner={repository.owner}
+                  repo={repository.name}
+                  branch={repository.defaultBranch}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center text-slate-500">
+              Select a file to view its content
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop: Side-by-side layout */}
       {/* File Tree */}
-      <div className="w-80 border-r border-slate-700 bg-slate-900 overflow-y-auto">
+      <div className="hidden lg:block w-80 border-r border-slate-700 bg-slate-900 overflow-y-auto">
         <div className="p-3 border-b border-slate-700">
           <h3 className="text-sm font-medium text-white">Files</h3>
         </div>
@@ -218,18 +286,24 @@ export function FileExplorer({ repository }: FileExplorerProps) {
       </div>
 
       {/* File Content */}
-      <div className="flex-1 bg-slate-900 overflow-auto">
+      <div className="hidden lg:block flex-1 bg-slate-900 overflow-auto">
         {selectedFile ? (
           <div>
             <div className="px-4 py-3 border-b border-slate-700 bg-slate-800/50 flex items-center justify-between">
               <span className="text-sm text-slate-300">{selectedFile.path}</span>
-              <span className="text-xs text-slate-500">
-                {fileContent.split('\n').length} lines
-              </span>
+              {!isImageFile(selectedFile.name) && !isVideoFile(selectedFile.name) && (
+                <span className="text-xs text-slate-500">
+                  {fileContent.split('\n').length} lines
+                </span>
+              )}
             </div>
-            <pre className="p-4 text-sm font-mono text-slate-300 overflow-x-auto">
-              <code>{fileContent}</code>
-            </pre>
+            <FileContentViewer 
+              file={selectedFile} 
+              content={fileContent}
+              owner={repository.owner}
+              repo={repository.name}
+              branch={repository.defaultBranch}
+            />
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-slate-500">
@@ -238,5 +312,77 @@ export function FileExplorer({ repository }: FileExplorerProps) {
         )}
       </div>
     </div>
+  )
+}
+
+// File Content Viewer Component - handles text, images, and videos
+interface FileContentViewerProps {
+  file: FileNode
+  content: string
+  owner: string
+  repo: string
+  branch: string
+}
+
+function FileContentViewer({ file, content, owner, repo, branch }: FileContentViewerProps) {
+  const isImage = (name: string) => {
+    const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico']
+    return imageExts.some(ext => name.toLowerCase().endsWith(ext))
+  }
+
+  const isVideo = (name: string) => {
+    const videoExts = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv']
+    return videoExts.some(ext => name.toLowerCase().endsWith(ext))
+  }
+
+  // Construct raw GitHub URL for media files
+  const getRawUrl = () => {
+    return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file.path}`
+  }
+
+  if (isImage(file.name)) {
+    return (
+      <div className="p-4 flex items-center justify-center min-h-[300px]">
+        <img 
+          src={getRawUrl()} 
+          alt={file.name}
+          className="max-w-full max-h-[70vh] object-contain rounded-lg"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none'
+            const parent = (e.target as HTMLImageElement).parentElement
+            if (parent) {
+              parent.innerHTML = '<div class="text-slate-500">Failed to load image</div>'
+            }
+          }}
+        />
+      </div>
+    )
+  }
+
+  if (isVideo(file.name)) {
+    return (
+      <div className="p-4 flex items-center justify-center min-h-[300px]">
+        <video 
+          src={getRawUrl()} 
+          controls
+          className="max-w-full max-h-[70vh] rounded-lg"
+          onError={(e) => {
+            const parent = (e.target as HTMLVideoElement).parentElement
+            if (parent) {
+              parent.innerHTML = '<div class="text-slate-500">Failed to load video</div>'
+            }
+          }}
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    )
+  }
+
+  // Default: show as text/code
+  return (
+    <pre className="p-4 text-sm font-mono text-slate-300 overflow-x-auto whitespace-pre-wrap break-words">
+      <code>{content}</code>
+    </pre>
   )
 }

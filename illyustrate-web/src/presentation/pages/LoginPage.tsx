@@ -1,12 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Github, Sparkles, Code2, GitGraph, FileText, MessageSquare } from 'lucide-react'
+import { Github, Code2, GitGraph, FileText, MessageSquare, Loader2 } from 'lucide-react'
 import { useAuthStore } from '@application/stores/AuthStore'
 import { APP_NAME, APP_TAGLINE } from '@shared/constants'
 
 export function LoginPage() {
-  const { signInWithGitHub, isAuthenticated, isLoading } = useAuthStore()
+  const { signInWithGitHub, isAuthenticated, isLoading: authLoading } = useAuthStore()
   const navigate = useNavigate()
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -15,10 +16,12 @@ export function LoginPage() {
   }, [isAuthenticated, navigate])
 
   const handleGitHubLogin = async () => {
+    setIsRedirecting(true)
     try {
       await signInWithGitHub()
     } catch (error) {
       console.error('Login error:', error)
+      setIsRedirecting(false)
     }
   }
 
@@ -52,9 +55,11 @@ export function LoginPage() {
         <div className="max-w-xl mx-auto lg:mx-0">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="ILLYUSTRATE"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover"
+            />
             <span className="text-2xl sm:text-3xl font-bold text-white">{APP_NAME}</span>
           </div>
 
@@ -71,11 +76,15 @@ export function LoginPage() {
           {/* Login Button */}
           <button
             onClick={handleGitHubLogin}
-            disabled={isLoading}
+            disabled={isRedirecting || authLoading}
             className="w-full flex items-center justify-center gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-white text-slate-900 rounded-xl font-semibold text-base sm:text-lg hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Github className="w-5 h-5 sm:w-6 sm:h-6" />
-            {isLoading ? 'Connecting...' : 'Continue with GitHub'}
+            {isRedirecting || authLoading ? (
+              <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
+            ) : (
+              <Github className="w-5 h-5 sm:w-6 sm:h-6" />
+            )}
+            {isRedirecting || authLoading ? 'Connecting to GitHub...' : 'Continue with GitHub'}
           </button>
 
           <p className="mt-4 text-xs sm:text-sm text-slate-500">

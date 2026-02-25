@@ -25,7 +25,7 @@ export function MainLayout() {
 
 // Mobile sidebar component
 import { useState } from 'react'
-import { Menu, X, LayoutDashboard, Settings, Sparkles } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Settings } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { APP_NAME } from '@shared/constants'
 import { useAuthStore } from '@application/stores/AuthStore'
@@ -60,7 +60,11 @@ function MobileSidebar() {
             {/* Logo */}
             <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700">
               <div className="flex items-center">
-                <Sparkles className="w-6 h-6 text-indigo-500" />
+                <img 
+                  src="/logo.jpg" 
+                  alt="ILLYUSTRATE"
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
                 <span className="ml-3 font-bold text-lg text-white">{APP_NAME}</span>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
