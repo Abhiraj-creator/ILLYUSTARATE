@@ -3,6 +3,8 @@ export interface User {
   email: string;
   name: string;
   avatarUrl?: string;
+  bio?: string;
+  experience?: string;
   plan: 'free';
   createdAt: Date;
   updatedAt: Date;

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f13ec",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#191022",
+                        "plum-deep": "#4a2040",
+                        "plum-border": "#5e2d52",
+                        "plum-item": "#2a1127",
+                        "milk": "#f7f6f8",
+                        "lavender-soft": "#C084FC",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #2a1127;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #f7f6f8;
+            border-radius: 10px;
+        }
+        .modal-overlay {
+            backdrop-filter: blur(8px);
+            background-color: rgba(25, 16, 34, 0.8);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #7B4FA6 0%, #C084FC 100%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-hidden">
+<!-- Mocked Background Dashboard (Blurred) -->
+<div class="fixed inset-0 z-0 flex flex-col p-8 gap-8 opacity-40 grayscale">
+<div class="flex justify-between items-center w-full">
+<div class="h-10 w-40 bg-slate-700 rounded-lg"></div>
+<div class="h-10 w-10 bg-slate-700 rounded-full"></div>
+</div>
+<div class="grid grid-cols-3 gap-6">
+<div class="h-64 bg-slate-800 rounded-xl"></div>
+<div class="h-64 bg-slate-800 rounded-xl"></div>
+<div class="h-64 bg-slate-800 rounded-xl"></div>
+</div>
+<div class="h-96 bg-slate-800 rounded-xl w-full"></div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+<!-- Modal Card -->
+<div class="bg-plum-deep border border-plum-border w-full max-w-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden max-h-[85vh]">
+<!-- Modal Header -->
+<div class="p-8 pb-4">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="font-serif text-3xl text-milk italic tracking-tight">Add Repository</h2>
+<p class="text-lavender-soft/70 text-sm mt-1 font-light">Connect your GitHub projects to ILLYUSTRATE</p>
+</div>
+<button class="text-milk/50 hover:text-milk">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Search Input -->
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-lavender-soft">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-3 bg-plum-item border border-plum-border rounded-xl text-milk placeholder:text-lavender-soft/40 focus:ring-2 focus:ring-lavender-soft/50 focus:border-transparent transition-all outline-none" placeholder="Search your repositories..." type="text"/>
+</div>
+</div>
+<!-- Repository List -->
+<div class="flex-1 overflow-y-auto px-8 py-4 custom-scrollbar space-y-3">
+<!-- Repo Row 1 -->
+<div class="flex items-center justify-between p-4 bg-plum-item border border-plum-border/30 rounded-xl hover:border-lavender-soft/30 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-plum-deep flex items-center justify-center text-lavender-soft border border-plum-border">
+<span class="material-symbols-outlined text-2xl">code_blocks</span>
+</div>
+<div>
+<p class="text-milk font-medium tracking-wide">milk-design-system</p>
+<p class="text-lavender-soft/50 text-xs">illyustrate/milk-ds • Updated 2h ago</p>
+</div>
+</div>
+<button class="btn-gradient px-5 py-1.5 rounded-lg text-milk text-sm font-semibold shadow-lg hover:brightness-110 transition-all">
+                        Add
+                    </button>
+</div>
+<!-- Repo Row 2 -->
+<div class="flex items-center justify-between p-4 bg-plum-item border border-plum-border/30 rounded-xl hover:border-lavender-soft/30 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-plum-deep flex items-center justify-center text-lavender-soft border border-plum-border">
+<span class="material-symbols-outlined text-2xl">grid_view</span>
+</div>
+<div>
+<p class="text-milk font-medium tracking-wide">editorial-assets</p>
+<p class="text-lavender-soft/50 text-xs">illyustrate/assets • Updated yesterday</p>
+</div>
+</div>
+<button class="btn-gradient px-5 py-1.5 rounded-lg text-milk text-sm font-semibold shadow-lg hover:brightness-110 transition-all">
+                        Add
+                    </button>
+</div>
+<!-- Repo Row 3 -->
+<div class="flex items-center justify-between p-4 bg-plum-item border border-plum-border/30 rounded-xl hover:border-lavender-soft/30 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-plum-deep flex items-center justify-center text-lavender-soft border border-plum-border">
+<span class="material-symbols-outlined text-2xl">auto_awesome</span>
+</div>
+<div>
+<p class="text-milk font-medium tracking-wide">plum-palette-engine</p>
+<p class="text-lavender-soft/50 text-xs">illyustrate/engine • Updated 3 days ago</p>
+</div>
+</div>
+<button class="btn-gradient px-5 py-1.5 rounded-lg text-milk text-sm font-semibold shadow-lg hover:brightness-110 transition-all">
+                        Add
+                    </button>
+</div>
+<!-- Repo Row 4 -->
+<div class="flex items-center justify-between p-4 bg-plum-item border border-plum-border/30 rounded-xl hover:border-lavender-soft/30 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-plum-deep flex items-center justify-center text-lavender-soft border border-plum-border">
+<span class="material-symbols-outlined text-2xl">architecture</span>
+</div>
+<div>
+<p class="text-milk font-medium tracking-wide">luxury-ui-kit</p>
+<p class="text-lavender-soft/50 text-xs">illyustrate/luxury-kit • Updated 1 week ago</p>
+</div>
+</div>
+<button class="btn-gradient px-5 py-1.5 rounded-lg text-milk text-sm font-semibold shadow-lg hover:brightness-110 transition-all">
+                        Add
+                    </button>
+</div>
+<!-- Repo Row 5 -->
+<div class="flex items-center justify-between p-4 bg-plum-item border border-plum-border/30 rounded-xl hover:border-lavender-soft/30 transition-colors group opacity-60">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-plum-deep flex items-center justify-center text-lavender-soft border border-plum-border">
+<span class="material-symbols-outlined text-2xl">package_2</span>
+</div>
+<div>
+<p class="text-milk font-medium tracking-wide">deprecated-v1-core</p>
+<p class="text-lavender-soft/50 text-xs">illyustrate/v1 • Archive</p>
+</div>
+</div>
+<button class="bg-plum-border px-5 py-1.5 rounded-lg text-milk/50 text-sm font-semibold cursor-not-allowed">
+                        Added
+                    </button>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="p-6 border-t border-plum-border bg-plum-item/30 flex justify-between items-center">
+<button class="text-milk/60 text-sm hover:text-milk transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">sync</span>
+                    Rescan Organization
+                </button>
+<div class="flex gap-3">
+<button class="px-6 py-2 rounded-lg text-milk/80 text-sm font-medium hover:bg-plum-border transition-colors">
+                        Cancel
+                    </button>
+<button class="px-6 py-2 rounded-lg bg-milk text-plum-deep text-sm font-bold hover:bg-white transition-colors">
+                        Finish
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

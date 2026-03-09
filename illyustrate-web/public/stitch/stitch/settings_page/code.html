@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - ILLYUSTRATE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&amp;family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f13ec",
+                        "brand-plum": "#4a2040",
+                        "brand-lavender": "#7B4FA6",
+                        "brand-milk": "#f7f6f8",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "playfair": ["Playfair Display", "serif"],
+                        "mono": ["DM Mono", "monospace"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .luxury-text {
+            font-family: 'Playfair Display', serif;
+        }
+        .mono-text {
+            font-family: 'DM Mono', monospace;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="flex items-center justify-between border-b border-white/10 px-8 py-4 backdrop-blur-md sticky top-0 z-50 bg-background-dark/80">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold luxury-text tracking-widest">ILLYUSTRATE</h2>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-8 text-sm uppercase tracking-widest font-medium text-slate-400">
+<a class="hover:text-primary transition-colors" href="#">Gallery</a>
+<a class="hover:text-primary transition-colors" href="#">Studio</a>
+<a class="hover:text-primary transition-colors" href="#">Curated</a>
+</nav>
+<div class="flex gap-3">
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-white/5 hover:bg-white/10 transition-all text-white">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<div class="h-10 w-10 rounded-full border border-brand-lavender p-0.5">
+<div class="h-full w-full rounded-full bg-cover bg-center" data-alt="User profile avatar circle" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuClis1oTvg6dNZEaHRfQU25w1cKo9qhHAgYV40oh87RXFtsev9fcJcaxCNZivkcpnPKHFZKey8pH7_YC6eUgW1swnKQz7NRI3_-aySjFLVuPhVWt1scvDwVi5t1texu7IP0EAHFVKomEoSSkF_fHLUH_qcT4S26Zr4ENY4fMsVv9kPiVTuG_HO4XeGlFWQRDL2PNoGfjoCRWrTEm57seTL0qmwVLVPlsE7H9SybRmH9r0uk15tN9J2k3E9b9jQyRoaLFCoy0vmzag4')"></div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col md:flex-row max-w-7xl mx-auto w-full px-6 py-12 gap-12">
+<aside class="w-full md:w-64 flex flex-col gap-8">
+<div>
+<h1 class="luxury-text text-4xl mb-2 text-white italic">Settings</h1>
+<p class="text-slate-400 text-xs uppercase tracking-[0.2em] font-medium">Account Configuration</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg bg-brand-lavender text-white shadow-lg shadow-brand-lavender/20 group transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-medium">Profile</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-medium">Notifications</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span class="font-medium">Security</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-medium">Billing</span>
+</a>
+</nav>
+<div class="mt-auto p-6 rounded-2xl bg-gradient-to-br from-brand-plum to-background-dark border border-white/5 hidden md:block">
+<p class="text-xs text-brand-lavender font-bold uppercase tracking-widest mb-2">Current Plan</p>
+<p class="luxury-text text-xl text-white mb-4">Professional</p>
+<button class="w-full py-2 text-xs font-bold border border-brand-lavender/30 rounded-lg text-brand-lavender hover:bg-brand-lavender hover:text-white transition-all">UPGRADE</button>
+</div>
+</aside>
+<section class="flex-1">
+<div class="bg-brand-plum rounded-2xl p-8 md:p-12 shadow-2xl border border-white/5">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+<div class="flex items-center gap-8">
+<div class="relative group">
+<div class="size-32 rounded-full border-4 border-brand-lavender/50 p-1 flex items-center justify-center overflow-hidden">
+<div class="h-full w-full rounded-full bg-cover bg-center" data-alt="Large detailed user profile avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBzQmiXlZlOmpmNly0Cy5O3kkfLksHTiIvbPBUHAE_Fr_V3mSpvOGtpgpE8Ut7HnIZwwsPI5MksMrc3LzyJTFYpWaQfGTMRdCYkvHz-bV7nE-wt1ql7kT0r4Fw1UPLnG3vYgrNKhkga9LeWRlJAQTN-MzQYlokaJ6ZgAobByWxn_HG-DlR89q4Sbyuep01Cvfq_KPYphkfiD1wwm46weEbE-1UIb9pyh2Jbnr_i8y2spbueoakxTFFb-DHkpYpXQoVONIB9dGDqqXk')"></div>
+</div>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-white">photo_camera</span>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<h3 class="luxury-text text-3xl text-white">Personal Identity</h3>
+<button class="text-brand-lavender text-xs font-bold uppercase tracking-widest border border-brand-lavender/20 px-4 py-2 rounded-lg hover:bg-brand-lavender/10 transition-all flex items-center gap-2 w-fit">
+<span class="material-symbols-outlined text-sm">edit</span>
+                                    Change Avatar
+                                </button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase tracking-widest text-slate-400 mono-text">Full Name</label>
+<input class="bg-brand-plum/50 border-none rounded-lg p-4 text-white focus:ring-2 focus:ring-brand-lavender focus:bg-brand-plum transition-all placeholder:text-slate-500" placeholder="Julianne V. Sterling" type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase tracking-widest text-slate-400 mono-text">Username</label>
+<input class="bg-brand-plum/50 border-none rounded-lg p-4 text-white focus:ring-2 focus:ring-brand-lavender focus:bg-brand-plum transition-all placeholder:text-slate-500" placeholder="@juliannev" type="text"/>
+</div>
+<div class="flex flex-col gap-2 md:col-span-2">
+<label class="text-xs font-bold uppercase tracking-widest text-slate-400 mono-text">Email Address</label>
+<input class="bg-brand-plum/50 border-none rounded-lg p-4 text-white focus:ring-2 focus:ring-brand-lavender focus:bg-brand-plum transition-all placeholder:text-slate-500" placeholder="julianne.v@illyustrate.studio" type="email"/>
+</div>
+<div class="flex flex-col gap-2 md:col-span-2">
+<label class="text-xs font-bold uppercase tracking-widest text-slate-400 mono-text">Bio / Creative Statement</label>
+<textarea class="bg-brand-plum/50 border-none rounded-lg p-4 text-white focus:ring-2 focus:ring-brand-lavender focus:bg-brand-plum transition-all placeholder:text-slate-500 resize-none" placeholder="Curating the intersections of digital surrealism and classic editorial aesthetics..." rows="4"></textarea>
+</div>
+</div>
+<div class="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
+<p class="text-slate-400 text-sm italic luxury-text">Last updated: Oct 24, 2023</p>
+<div class="flex gap-4 w-full md:w-auto">
+<button class="px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-bold uppercase tracking-widest text-xs hover:bg-white/5 transition-all flex-1 md:flex-none">Cancel</button>
+<button class="px-10 py-3 rounded-xl bg-gradient-to-r from-brand-lavender to-primary text-white font-bold uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex-1 md:flex-none">
+                                Save Changes
+                            </button>
+</div>
+</div>
+</div>
+<div class="mt-8 flex gap-6">
+<div class="flex-1 p-6 rounded-2xl bg-white/5 border border-white/5">
+<div class="flex items-center gap-4 mb-2">
+<span class="material-symbols-outlined text-brand-lavender">history</span>
+<p class="font-bold uppercase tracking-widest text-[10px] text-slate-400">Login Activity</p>
+</div>
+<p class="text-white text-sm">Paris, France · Mac OS X</p>
+</div>
+<div class="flex-1 p-6 rounded-2xl bg-white/5 border border-white/5">
+<div class="flex items-center gap-4 mb-2">
+<span class="material-symbols-outlined text-brand-lavender">verified_user</span>
+<p class="font-bold uppercase tracking-widest text-[10px] text-slate-400">2FA Status</p>
+</div>
+<p class="text-white text-sm">Active · Authenticator App</p>
+</div>
+</div>
+</section>
+</main>
+<footer class="border-t border-white/5 mt-auto py-8">
+<div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+<p class="text-slate-500 mono-text text-[10px] uppercase tracking-widest">© 2024 ILLYUSTRATE Studio. All Rights Reserved.</p>
+<div class="flex gap-8 text-[10px] mono-text uppercase tracking-widest text-slate-500">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

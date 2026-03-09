@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f13ec",
+                        "lavender": "#C084FC",
+                        "plum-deep": "#191022",
+                        "plum-chat": "#381932",
+                        "plum-bubble": "#4a2040",
+                        "plum-tag": "#2a1127",
+                        "milk": "#F5F5F7",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>.noise-bg {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCtI4caG91VxhEeqTu0gRCok9YwJzS-n1HSIde9plTKLUcE4aAOQF6sWo57gSiGsVz7XiwKelp83D6_aRrrc0a1hn6LHZdXM7bOGuCBIv79D4bk4weXiIkaHRl74MfxRm9VtribX7RDlN_SXjWpyLpPO-hUVgSGwkFKfJK4vqX8-_HN0h0_GMUAQVadJhw92hvvosK7pnucHzARe5z8nS-GgV6OIhvSE_5i8-ZglMFC6BJHtsZw_DY2GPQ6VYC-VEmYNS48jTIY-js);
+    background-blend-mode: overlay
+    }
+.lavender-glow:focus-within {
+    box-shadow: 0 0 15px rgba(192, 132, 252, 0.3)
+    }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-milk overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-plum-bubble/30 bg-plum-deep px-10 py-3 shrink-0">
+<div class="flex items-center gap-4 text-milk">
+<div class="size-6 text-lavender">
+<span class="material-symbols-outlined text-3xl">auto_awesome</span>
+</div>
+<h2 class="text-milk text-lg font-bold leading-tight tracking-[-0.015em] uppercase">ILLYUSTRATE</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="flex items-center gap-9">
+<a class="text-milk/60 hover:text-lavender text-sm font-medium leading-normal transition-colors" href="#">Repository</a>
+<a class="text-lavender text-sm font-medium leading-normal" href="#">Chat</a>
+<a class="text-milk/60 hover:text-lavender text-sm font-medium leading-normal transition-colors" href="#">Assets</a>
+</div>
+<div class="flex gap-2">
+<button class="flex cursor-pointer items-center justify-center rounded-lg h-10 bg-plum-bubble/50 text-milk px-2.5 hover:bg-plum-bubble transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="flex cursor-pointer items-center justify-center rounded-lg h-10 bg-plum-bubble/50 text-milk px-2.5 hover:bg-plum-bubble transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-lavender/30" data-alt="User profile avatar icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDPGN9Um7kNeEcRhkGfZubqU1yBk-Vce221zw6vnRkk_luaJfnh9cutbCzWqzBcEzeRBUqxgTgA8DrAZgolmcYvt2UJ8xT7xQQiE9I_suJkKg2Tj1DrN_cekDOhLvmfD-DV_UsGRUWyBy-VwVkGUU9XEl1_QUvzRQvSj2CM8YurALZOgWnDCnFzn05NXGq_M_ZaX_QwsoKCrQbSRR8ibsjWJVFa7iejKLOgOIMeD1Kwh9SlIdht7YpHUXouvTHaurtKHTB96wEedxk");'></div>
+</div>
+</div>
+</header>
+<!-- Sub-navigation -->
+<div class="bg-plum-deep px-10 border-b border-plum-bubble/20 shrink-0">
+<div class="flex gap-8">
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-milk/40 pb-3 pt-4 hover:text-milk transition-all" href="#">
+<p class="text-sm font-bold leading-normal tracking-wide">FILES</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-lavender text-milk pb-3 pt-4" href="#">
+<p class="text-sm font-bold leading-normal tracking-wide">CHAT</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-milk/40 pb-3 pt-4 hover:text-milk transition-all" href="#">
+<p class="text-sm font-bold leading-normal tracking-wide">SETTINGS</p>
+</a>
+</div>
+</div>
+<!-- Main Chat Area -->
+<main class="flex-1 overflow-y-auto bg-plum-chat noise-bg relative">
+<div class="max-w-4xl mx-auto px-6 py-8 flex flex-col gap-8">
+<!-- AI Message -->
+<div class="flex items-start gap-4">
+<div class="size-10 rounded-full bg-gradient-to-tr from-primary to-lavender flex items-center justify-center shrink-0 shadow-lg">
+<span class="material-symbols-outlined text-milk text-xl">temp_preferences_custom</span>
+</div>
+<div class="flex flex-col gap-2 max-w-2xl">
+<div class="flex items-center gap-2">
+<span class="text-milk/50 text-xs font-bold uppercase tracking-widest">System Architect</span>
+</div>
+<div class="bg-plum-bubble rounded-xl rounded-tl-none p-5 text-milk leading-relaxed shadow-xl border border-lavender/10">
+                        I've completed the visual audit of your repository. The implementation of the <span class="text-lavender font-semibold">lavender #C084FC</span> highlights provides a sophisticated contrast against the <span class="text-lavender font-semibold">Plum palette</span>. I've detected three areas where we can refine the CSS transitions. 
+                        <br/><br/>
+                        Would you like me to generate the optimized <span class="text-lavender font-semibold">Tailwind configuration</span> for the editorial layout?
+                    </div>
+<!-- Code References -->
+<div class="flex gap-2 mt-1">
+<div class="bg-plum-tag px-3 py-1.5 rounded flex items-center gap-2 border border-plum-bubble/50">
+<span class="material-symbols-outlined text-sm text-lavender">description</span>
+<span class="font-mono text-xs text-milk/70">tailwind.config.js</span>
+</div>
+<div class="bg-plum-tag px-3 py-1.5 rounded flex items-center gap-2 border border-plum-bubble/50">
+<span class="material-symbols-outlined text-sm text-lavender">data_object</span>
+<span class="font-mono text-xs text-milk/70">globals.css</span>
+</div>
+</div>
+</div>
+</div>
+<!-- User Message (Right Aligned) -->
+<div class="flex items-start gap-4 flex-row-reverse">
+<div class="size-10 rounded-full bg-plum-bubble border border-lavender/20 flex items-center justify-center shrink-0 shadow-md">
+<span class="material-symbols-outlined text-lavender text-xl">person</span>
+</div>
+<div class="flex flex-col gap-2 max-w-2xl items-end">
+<div class="flex items-center gap-2">
+<span class="text-milk/50 text-xs font-bold uppercase tracking-widest">Editor</span>
+</div>
+<div class="bg-lavender/10 backdrop-blur-sm rounded-xl rounded-tr-none p-5 text-milk leading-relaxed border border-lavender/30 shadow-inner">
+                        Yes, let's proceed with those refinements. Specifically focus on the typography scale and the glassmorphism effects on the dashboard cards.
+                    </div>
+</div>
+</div>
+<!-- AI Typing Message -->
+<div class="flex items-start gap-4">
+<div class="size-10 rounded-full bg-gradient-to-tr from-primary to-lavender flex items-center justify-center shrink-0 opacity-80 shadow-md">
+<span class="material-symbols-outlined text-milk text-xl">temp_preferences_custom</span>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="text-milk/50 text-xs font-bold uppercase tracking-widest">System Architect</span>
+</div>
+<div class="bg-plum-bubble/60 backdrop-blur-md rounded-xl rounded-tl-none px-5 py-4 text-milk border border-lavender/10 flex gap-1.5 items-center">
+<div class="size-1.5 bg-lavender/60 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+<div class="size-1.5 bg-lavender/60 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+<div class="size-1.5 bg-lavender/60 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Input Area -->
+<footer class="bg-plum-deep border-t border-plum-bubble/40 p-6 shrink-0">
+<div class="max-w-4xl mx-auto flex items-center gap-4">
+<div class="relative flex-1 group lavender-glow rounded-full transition-all duration-300">
+<div class="absolute left-5 top-1/2 -translate-y-1/2 text-milk/30 group-focus-within:text-lavender transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</div>
+<input class="w-full h-14 bg-plum-bubble pl-14 pr-14 rounded-full border border-lavender/10 text-milk placeholder-milk/30 focus:outline-none focus:border-lavender/40 transition-all font-medium" placeholder="Ask about your design system..." type="text"/>
+<div class="absolute right-5 top-1/2 -translate-y-1/2 text-milk/30 hover:text-lavender cursor-pointer">
+<span class="material-symbols-outlined">mic</span>
+</div>
+</div>
+<button class="h-14 w-14 rounded-full bg-gradient-to-br from-primary via-primary to-lavender flex items-center justify-center text-milk shadow-lg hover:shadow-lavender/20 hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-2xl">arrow_upward</span>
+</button>
+</div>
+<div class="max-w-4xl mx-auto mt-3 flex justify-center">
+<p class="text-[10px] text-milk/20 font-bold uppercase tracking-widest">ILLYUSTRATE ENGINE v4.2 // SECURE ARCHITECTURE</p>
+</div>
+</footer>
+</body></html>

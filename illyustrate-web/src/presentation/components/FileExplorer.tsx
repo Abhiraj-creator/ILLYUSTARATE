@@ -1,14 +1,5 @@
 import { useState, useEffect } from 'react'
-import { 
-  Folder, 
-  File, 
-  ChevronRight, 
-  ChevronDown,
-  FileCode,
-  FileJson,
-  FileType,
-  Loader2
-} from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { GitHubApi } from '@infrastructure/api/GitHubApi'
 import { supabase } from '@infrastructure/storage/SupabaseClient'
 import type { Repository } from '@domain/entities/Repository'
@@ -43,7 +34,7 @@ export function FileExplorer({ repository }: FileExplorerProps) {
       const { data: { session } } = await supabase.auth.getSession()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const accessToken = (session as any)?.provider_token
-      
+
       if (!accessToken) {
         console.error('No GitHub access token found')
         setLoading(false)
@@ -53,7 +44,7 @@ export function FileExplorer({ repository }: FileExplorerProps) {
       // Fetch real file tree from GitHub
       const github = new GitHubApi(accessToken)
       const treeItems = await github.getRepoTree(repository.owner, repository.name)
-      
+
       // Build file tree from GitHub tree items
       const tree = buildFileTree(treeItems)
       setFileTree(tree)
@@ -127,21 +118,21 @@ export function FileExplorer({ repository }: FileExplorerProps) {
 
   const loadFileContent = async (node: FileNode) => {
     setSelectedFile(node)
-    
+
     // Handle image and video files specially
     if (isImageFile(node.name) || isVideoFile(node.name)) {
       setFileContent('') // Clear content for media files
       return
     }
-    
+
     setFileContent('Loading...')
-    
+
     try {
       // Get GitHub access token from session
       const { data: { session } } = await supabase.auth.getSession()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const accessToken = (session as any)?.provider_token
-      
+
       if (!accessToken) {
         setFileContent('Error: No GitHub access token found')
         return
@@ -150,12 +141,12 @@ export function FileExplorer({ repository }: FileExplorerProps) {
       // Fetch real file content from GitHub
       const github = new GitHubApi(accessToken)
       const content = await github.getFileContent(
-        repository.owner, 
-        repository.name, 
+        repository.owner,
+        repository.name,
         node.path,
         repository.defaultBranch
       )
-      
+
       setFileContent(content)
     } catch (error) {
       console.error('Failed to load file content:', error)
@@ -164,12 +155,28 @@ export function FileExplorer({ repository }: FileExplorerProps) {
   }
 
   const getFileIcon = (name: string) => {
-    if (name.endsWith('.tsx') || name.endsWith('.ts') || name.endsWith('.js') || name.endsWith('.jsx')) return <FileCode className="w-4 h-4 text-blue-400" />
-    if (name.endsWith('.json')) return <FileJson className="w-4 h-4 text-yellow-400" />
-    if (name.endsWith('.md')) return <FileType className="w-4 h-4 text-white" />
-    if (isImageFile(name)) return <div className="w-4 h-4 bg-purple-500 rounded text-xs flex items-center justify-center text-white">IMG</div>
-    if (isVideoFile(name)) return <div className="w-4 h-4 bg-red-500 rounded text-xs flex items-center justify-center text-white">VID</div>
-    return <File className="w-4 h-4 text-slate-400" />
+    if (name.endsWith('.tsx') || name.endsWith('.ts') || name.endsWith('.js') || name.endsWith('.jsx')) {
+      return { icon: 'javascript', color: 'text-yellow-400' }
+    }
+    if (name.endsWith('.css') || name.endsWith('.scss')) {
+      return { icon: 'css', color: 'text-blue-400' }
+    }
+    if (name.endsWith('.json')) {
+      return { icon: 'data_object', color: 'text-orange-400' }
+    }
+    if (name.endsWith('.md')) {
+      return { icon: 'menu_book', color: 'text-amber-200' }
+    }
+    if (name === '.gitignore') {
+      return { icon: 'settings', color: 'text-slate-400' }
+    }
+    if (isImageFile(name)) {
+      return { icon: 'image', color: 'text-purple-400' }
+    }
+    if (isVideoFile(name)) {
+      return { icon: 'movie', color: 'text-red-400' }
+    }
+    return { icon: 'description', color: 'text-slate-400' }
   }
 
   const isImageFile = (name: string) => {
@@ -182,140 +189,147 @@ export function FileExplorer({ repository }: FileExplorerProps) {
     return videoExts.some(ext => name.toLowerCase().endsWith(ext))
   }
 
-  const isTextFile = (name: string) => {
-    const textExts = ['.txt', '.md', '.json', '.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.scss', '.yaml', '.yml', '.xml', '.csv', '.log', '.env', '.gitignore', '.swift', '.java', '.py', '.go', '.rs', '.c', '.cpp', '.h', '.php', '.rb', '.sh', '.bat']
-    return textExts.some(ext => name.toLowerCase().endsWith(ext))
-  }
-
   const renderTree = (nodes: FileNode[], depth = 0) => {
-    return nodes.map((node) => (
-      <div key={node.path}>
-        <div
-          className={`flex items-center gap-2 px-3 py-2 hover:bg-slate-800 cursor-pointer ${
-            selectedFile?.path === node.path ? 'bg-slate-800' : ''
-          }`}
-          style={{ paddingLeft: `${12 + depth * 16}px` }}
-          onClick={() => handleToggle(node)}
-        >
-          {node.type === 'dir' ? (
-            <>
-              {node.isOpen ? (
-                <ChevronDown className="w-4 h-4 text-slate-500" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-500" />
-              )}
-              <Folder className="w-4 h-4 text-indigo-400" />
-            </>
-          ) : (
-            <>
-              <span className="w-4" />
-              {getFileIcon(node.name)}
-            </>
+    return nodes.map((node) => {
+      const isSelected = selectedFile?.path === node.path
+      const paddingLeft = depth === 0 ? 16 : 16 + depth * 16
+
+      return (
+        <div key={node.path}>
+          <div
+            className={`flex items-center gap-3 py-1.5 hover:bg-[#4a2040]/30 cursor-pointer group ${isSelected ? 'bg-[#4a2040]/80 border-l-2 border-primary' : 'border-l-2 border-transparent'}`}
+            style={{ paddingLeft: `${paddingLeft}px`, paddingRight: '16px' }}
+            onClick={() => handleToggle(node)}
+          >
+            {node.type === 'dir' ? (
+              <>
+                <span className="material-symbols-outlined text-[16px] text-[#ab9db9]">
+                  {node.isOpen ? 'keyboard_arrow_down' : 'keyboard_arrow_right'}
+                </span>
+                <span className="material-symbols-outlined text-[16px] text-[#ab9db9]">
+                  {node.isOpen ? 'folder_open' : 'folder'}
+                </span>
+                <span className="text-milk/80 text-sm truncate">{node.name}</span>
+              </>
+            ) : (
+              <>
+                {depth > 0 && <span className="w-4" />}
+                <span className={`material-symbols-outlined text-[16px] ${getFileIcon(node.name).color}`}>
+                  {getFileIcon(node.name).icon}
+                </span>
+                <span className={`text-sm truncate ${isSelected ? 'text-milk font-medium' : 'text-milk/80'}`}>
+                  {node.name}
+                </span>
+              </>
+            )}
+          </div>
+          {node.type === 'dir' && node.isOpen && node.children && (
+            <div>{renderTree(node.children, depth + 1)}</div>
           )}
-          <span className={`text-sm ${node.type === 'dir' ? 'text-slate-300' : 'text-slate-400'}`}>
-            {node.name}
-          </span>
         </div>
-        {node.type === 'dir' && node.isOpen && node.children && (
-          <div>{renderTree(node.children, depth + 1)}</div>
-        )}
-      </div>
-    ))
+      )
+    })
   }
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <div className="h-full flex items-center justify-center bg-[#191022]">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="h-full flex flex-col lg:flex-row">
-      {/* Mobile: Show file tree or content based on selection */}
-      <div className={`lg:hidden h-full ${selectedFile ? 'hidden' : 'block'}`}>
-        {/* Mobile File Tree */}
-        <div className="h-full border-r border-slate-700 bg-slate-900 overflow-y-auto">
-          <div className="p-3 border-b border-slate-700">
-            <h3 className="text-sm font-medium text-white">Files</h3>
+    <div className="flex h-full w-full overflow-hidden bg-[#191022] font-display text-slate-100 relative selection:bg-primary selection:text-white">
+      {/* Sidebar Explorer */}
+      <aside className={`w-64 bg-[#2a1127] flex flex-col border-r border-[#5e2d52]/50 shrink-0 ${selectedFile ? 'hidden lg:flex' : 'flex flex-1 lg:flex-none'}`}>
+        <div className="p-4 flex items-center justify-between text-[#ab9db9] border-b border-[#5e2d52]/50 uppercase text-[10px] font-bold tracking-[0.2em]">
+          <span>Explorer</span>
+          <span className="material-symbols-outlined text-xs">more_horiz</span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+          <div className="px-4 py-1 flex items-center gap-2 text-milk/40 text-[11px] uppercase tracking-widest font-bold mb-1">
+            <span className="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+            <span className="truncate">{repository.name}</span>
           </div>
-          <div className="py-2">{renderTree(fileTree)}</div>
+          <div className="space-y-0.5 pb-4">
+            {renderTree(fileTree)}
+          </div>
         </div>
-      </div>
 
-      {/* Mobile: File Content with back button */}
-      <div className={`lg:hidden h-full ${selectedFile ? 'block' : 'hidden'}`}>
-        <div className="h-full bg-slate-900 overflow-auto">
-          {selectedFile ? (
-            <div className="h-full flex flex-col">
-              <div className="px-4 py-3 border-b border-slate-700 bg-slate-800/50 flex items-center gap-3">
-                <button 
-                  onClick={() => setSelectedFile(null)}
-                  className="text-slate-400 hover:text-white text-sm flex items-center gap-1"
-                >
-                  ← Back
-                </button>
-                <span className="text-sm text-slate-300 truncate">{selectedFile.path}</span>
-              </div>
-              <div className="flex-1 overflow-auto">
-                <FileContentViewer 
-                  file={selectedFile} 
-                  content={fileContent}
-                  owner={repository.owner}
-                  repo={repository.name}
-                  branch={repository.defaultBranch}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="h-full flex items-center justify-center text-slate-500">
-              Select a file to view its content
-            </div>
-          )}
+        <div className="p-4 bg-[#191022]/50 border-t border-[#5e2d52]/50 flex items-center justify-between mt-auto">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-sm text-emerald-500">commit</span>
+            <span className="text-[10px] text-[#ab9db9] font-mono uppercase truncate max-w-[120px]">{repository.defaultBranch} Branch</span>
+          </div>
+          <span className="material-symbols-outlined text-xs text-[#ab9db9] cursor-pointer hover:text-white transition-colors">sync</span>
         </div>
-      </div>
+      </aside>
 
-      {/* Desktop: Side-by-side layout */}
-      {/* File Tree */}
-      <div className="hidden lg:block w-80 border-r border-slate-700 bg-slate-900 overflow-y-auto">
-        <div className="p-3 border-b border-slate-700">
-          <h3 className="text-sm font-medium text-white">Files</h3>
-        </div>
-        <div className="py-2">{renderTree(fileTree)}</div>
-      </div>
-
-      {/* File Content */}
-      <div className="hidden lg:block flex-1 bg-slate-900 overflow-auto">
+      {/* Main File View */}
+      <main className={`flex-1 flex flex-col bg-[#0a0008] min-w-0 ${!selectedFile ? 'hidden lg:flex' : 'flex'}`}>
         {selectedFile ? (
-          <div>
-            <div className="px-4 py-3 border-b border-slate-700 bg-slate-800/50 flex items-center justify-between">
-              <span className="text-sm text-slate-300">{selectedFile.path}</span>
-              {!isImageFile(selectedFile.name) && !isVideoFile(selectedFile.name) && (
-                <span className="text-xs text-slate-500">
-                  {fileContent.split('\n').length} lines
-                </span>
-              )}
+          <>
+            {/* File Tab Header */}
+            <div className="flex items-center bg-[#191022] border-b border-[#2a1127]/50 shrink-0 overflow-x-auto custom-scrollbar">
+              <div className="flex items-center px-4 py-3 bg-[#0a0008] border-t-2 border-t-primary gap-3 shrink-0 relative lg:min-w-fit w-full lg:w-auto">
+                <button onClick={() => setSelectedFile(null)} className="lg:hidden absolute left-4 text-[#ab9db9] hover:text-white">
+                  <span className="material-symbols-outlined text-sm">arrow_back</span>
+                </button>
+                <div className="flex items-center gap-3 lg:ml-0 ml-8">
+                  <span className={`material-symbols-outlined text-[16px] ${getFileIcon(selectedFile.name).color}`}>
+                    {getFileIcon(selectedFile.name).icon}
+                  </span>
+                  <span className="text-milk text-xs font-semibold tracking-wide">{selectedFile.name}</span>
+                </div>
+                <button onClick={() => setSelectedFile(null)} className="ml-4 flex opacity-50 hover:opacity-100 transition-opacity">
+                  <span className="material-symbols-outlined text-[14px] text-[#ab9db9] hover:text-white">close</span>
+                </button>
+              </div>
             </div>
-            <FileContentViewer 
-              file={selectedFile} 
-              content={fileContent}
-              owner={repository.owner}
-              repo={repository.name}
-              branch={repository.defaultBranch}
-            />
-          </div>
+
+            {/* File Content Area */}
+            <div className="flex-1 overflow-auto flex font-mono text-[13px] leading-relaxed relative custom-scrollbar">
+              <FileContentViewer
+                file={selectedFile}
+                content={fileContent}
+                owner={repository.owner}
+                repo={repository.name}
+                branch={repository.defaultBranch}
+              />
+            </div>
+
+            {/* Footer Status Bar */}
+            <footer className="h-6 bg-primary px-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-4 text-[10px] font-bold text-milk uppercase tracking-wider">
+                <div className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[12px]">fork_right</span>
+                  <span className="truncate max-w-[100px]">{repository.defaultBranch}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-[10px] font-bold text-milk uppercase tracking-wider">
+                <span className="hidden sm:inline">UTF-8</span>
+                <span className="hidden sm:inline">Spaces: 2</span>
+                <span className="truncate max-w-[100px]">
+                  {isImageFile(selectedFile.name) ? 'Image' : isVideoFile(selectedFile.name) ? 'Video' : 'Text'}
+                </span>
+              </div>
+            </footer>
+          </>
         ) : (
-          <div className="h-full flex items-center justify-center text-slate-500">
-            Select a file to view its content
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center text-[#ab9db9]">
+              <span className="material-symbols-outlined text-4xl mb-4 opacity-50">deployed_code</span>
+              <p className="font-mono text-sm">Select a file from the explorer</p>
+            </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   )
 }
 
-// File Content Viewer Component - handles text, images, and videos
 interface FileContentViewerProps {
   file: FileNode
   content: string
@@ -335,23 +349,22 @@ function FileContentViewer({ file, content, owner, repo, branch }: FileContentVi
     return videoExts.some(ext => name.toLowerCase().endsWith(ext))
   }
 
-  // Construct raw GitHub URL for media files
   const getRawUrl = () => {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file.path}`
   }
 
   if (isImage(file.name)) {
     return (
-      <div className="p-4 flex items-center justify-center min-h-[300px]">
-        <img 
-          src={getRawUrl()} 
+      <div className="p-8 flex items-center justify-center w-full h-full bg-[#0a0008]">
+        <img
+          src={getRawUrl()}
           alt={file.name}
-          className="max-w-full max-h-[70vh] object-contain rounded-lg"
+          className="max-w-full max-h-full object-contain rounded shadow-lg border border-[#2a1127]"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none'
             const parent = (e.target as HTMLImageElement).parentElement
             if (parent) {
-              parent.innerHTML = '<div class="text-slate-500">Failed to load image</div>'
+              parent.innerHTML = '<div class="text-[#ab9db9] font-mono text-xs">Failed to load image rendering</div>'
             }
           }}
         />
@@ -361,15 +374,15 @@ function FileContentViewer({ file, content, owner, repo, branch }: FileContentVi
 
   if (isVideo(file.name)) {
     return (
-      <div className="p-4 flex items-center justify-center min-h-[300px]">
-        <video 
-          src={getRawUrl()} 
+      <div className="p-8 flex items-center justify-center w-full h-full bg-[#0a0008]">
+        <video
+          src={getRawUrl()}
           controls
-          className="max-w-full max-h-[70vh] rounded-lg"
+          className="max-w-full max-h-full rounded shadow-lg border border-[#2a1127]"
           onError={(e) => {
             const parent = (e.target as HTMLVideoElement).parentElement
             if (parent) {
-              parent.innerHTML = '<div class="text-slate-500">Failed to load video</div>'
+              parent.innerHTML = '<div class="text-[#ab9db9] font-mono text-xs">Failed to load video stream</div>'
             }
           }}
         >
@@ -379,10 +392,27 @@ function FileContentViewer({ file, content, owner, repo, branch }: FileContentVi
     )
   }
 
-  // Default: show as text/code
+  const lines = content.split('\n')
+
   return (
-    <pre className="p-4 text-sm font-mono text-slate-300 overflow-x-auto whitespace-pre-wrap break-words">
-      <code>{content}</code>
-    </pre>
+    <div className="flex w-full min-w-max">
+      {/* Line Numbers */}
+      <div className="w-12 bg-[#0a0008] border-r border-[#2a1127] py-4 flex flex-col items-end pr-3 select-none text-[#ab9db9]/40 sticky left-0 z-10 font-mono text-[13px] leading-relaxed shrink-0">
+        {lines.map((_, i) => (
+          <div key={i}>{i + 1}</div>
+        ))}
+      </div>
+      {/* Code Content */}
+      <div className="py-4 px-6 overflow-visible w-full font-mono text-[13px] leading-relaxed text-milk/80 whitespace-pre">
+        {content === 'Loading...' ? (
+          <div className="flex items-center gap-2 text-primary">
+            <Loader2 className="w-4 h-4 animate-spin" /> Fetching raw source...
+          </div>
+        ) : (
+          content
+        )}
+      </div>
+    </div>
   )
 }
+

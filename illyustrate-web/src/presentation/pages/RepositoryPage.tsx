@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { 
-  FileCode, 
-  MessageSquare, 
-  BookOpen, 
+import { useParams, useNavigate } from 'react-router-dom'
+import {
   Loader2,
-  RefreshCw,
-  LayoutGrid,
-  Search,
   Filter,
   X
 } from 'lucide-react'
@@ -24,8 +18,10 @@ type Tab = 'graph' | 'files' | 'chat' | 'docs'
 
 export function RepositoryPage() {
   const { owner, name } = useParams<{ owner: string; name: string }>()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('graph')
-  
+  const [mountedTabs, setMountedTabs] = useState<Set<Tab>>(new Set(['graph']))
+
   const { repositories, setCurrentRepository, updateRepositoryStatus } = useRepositoryStore()
   const { currentGraph, loadGraph, generateGraph, isLoading } = useGraphStore()
 
@@ -43,276 +39,278 @@ export function RepositoryPage() {
 
   const handleAnalyze = async () => {
     if (!repo || !owner || !name) return
-    
+
     try {
-      // Get the GitHub access token from the session
       const { data: { session } } = await supabase.auth.getSession()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const accessToken = (session as any)?.provider_token
-      
+
       if (!accessToken) {
         alert('GitHub access token not found. Please sign out and sign in again.')
         return
       }
-      
-      // Update repository status to show it's being analyzed
+
       updateRepositoryStatus(repo.id, 'analyzing')
-      
-      // Generate the graph
       await generateGraph(repo.id, owner, name, accessToken)
-      
-      // Update repository status to show analysis is complete
       updateRepositoryStatus(repo.id, 'completed')
-      
+
     } catch (error) {
       console.error('Failed to analyze repository:', error)
-      // Reset analyzing state on error
       updateRepositoryStatus(repo.id, 'failed')
       alert('Failed to analyze repository. Please try again.')
     }
   }
 
+  const handleTabChange = (tab: Tab) => {
+    setMountedTabs(prev => new Set([...prev, tab]))
+    setActiveTab(tab)
+  }
+
   const tabs = [
-    { id: 'graph' as Tab, label: 'Graph', icon: LayoutGrid },
-    { id: 'files' as Tab, label: 'Files', icon: FileCode },
-    { id: 'docs' as Tab, label: 'Docs', icon: BookOpen },
-    { id: 'chat' as Tab, label: 'Chat', icon: MessageSquare },
+    { id: 'graph' as Tab, label: 'Visual Graph', icon: 'account_tree' },
+    { id: 'files' as Tab, label: 'Code Explorer', icon: 'folder_open' },
+    { id: 'docs' as Tab, label: 'Documentation', icon: 'description' },
+    { id: 'chat' as Tab, label: 'Neural Chat', icon: 'forum' },
   ]
 
   if (!repo) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-screen w-full items-center justify-center bg-[#191022]">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-400">Loading repository...</p>
+          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-slate-400 font-serif italic text-lg">Initializing Workspace...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="h-full flex flex-col -m-4 sm:-m-6">
-      {/* Header */}
-      <div className="px-4 sm:px-6 py-4 border-b border-slate-700 bg-slate-800/50">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div>
-              <h1 className="text-lg sm:text-xl font-bold text-white">{repo.displayName}</h1>
-              <p className="text-xs sm:text-sm text-slate-400">
-                {repo.language} • {repo.stars.toLocaleString()} stars • {repo.sizeInMB.toFixed(1)} MB
-              </p>
+    <div className="flex h-screen w-full overflow-hidden bg-[#191022] font-display text-slate-100 relative selection:bg-primary selection:text-white">
+
+      {/* Main Viewport */}
+      <div className={`flex-1 flex flex-col h-full relative z-10 w-full transition-all duration-300 ${activeTab === 'graph' ? 'lg:pr-80' : ''}`}>
+
+        {/* Navbar (Sticky) */}
+        <header className="h-16 glass-navbar border-b border-[#5e2d52] flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-8 z-40 relative">
+
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-3 py-2 sm:py-0">
+            <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer group shrink-0">
+              <span className="material-symbols-outlined text-lg transition-transform group-hover:-translate-x-1">arrow_back</span>
+            </button>
+            <div className="h-4 w-px bg-slate-700 mx-1"></div>
+            <div className="flex items-center gap-2 overflow-hidden">
+              <span className="material-symbols-outlined text-[#C084FC] text-lg shrink-0">code_blocks</span>
+              <div className="font-serif italic text-milk text-lg truncate flex-1 min-w-0 flex space-x-1.5 items-baseline">
+                <span className="opacity-60">{owner}</span>
+                <span className="opacity-40 text-sm">/</span>
+                <span className="font-bold">{name}</span>
+              </div>
             </div>
-            
+          </div>
+
+          {/* Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar sm:-mb-0 -mb-2 pb-2 sm:pb-0 h-full">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`h-full flex items-center gap-2 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
+                  ? 'border-primary text-primary bg-primary/10'
+                  : 'border-transparent text-slate-400 hover:text-milk hover:bg-white/5'
+                  }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Analyze Status Area */}
+          <div className="flex items-center gap-4">
             {!repo.isAnalyzed && !repo.isAnalyzing && (
               <button
                 onClick={handleAnalyze}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 text-sm sm:text-base w-full sm:w-auto"
+                className="bg-primary hover:bg-primary/90 text-white px-4 h-8 rounded-full text-xs font-bold tracking-tight shadow-lg shadow-primary/20 flex items-center gap-2 transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
               >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-                <span className="hidden sm:inline">Analyze Repository</span>
-                <span className="sm:hidden">Analyze</span>
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="material-symbols-outlined text-[16px]">sync</span>}
+                RUN ANALYSIS
               </button>
             )}
-            
             {repo.isAnalyzing && (
-              <span className="flex items-center justify-center gap-2 text-indigo-400 text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Analyzing...
+              <span className="text-primary text-xs font-mono font-bold flex items-center gap-2 px-6">
+                <Loader2 className="w-4 h-4 animate-spin" /> ANALYZING...
               </span>
             )}
           </div>
+        </header>
 
-          {/* Tabs - scrollable on mobile, icon-only on small screens */}
-          <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1 overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                }`}
-              >
-                <tab.icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+        {/* Content Area */}
+        <main className="flex-1 relative w-full h-full overflow-hidden">
 
-      {/* Content */}
-      <div className="flex-1 overflow-hidden">
-        {activeTab === 'graph' && (
-          <div className="h-full flex flex-col lg:flex-row">
-            {/* Graph */}
-            <div className="flex-1 relative min-h-0">
+          {/* Graph Tab */}
+          <div className={`absolute inset-0 h-full ${activeTab === 'graph' ? 'block' : 'hidden'}`}>
+            <div className="absolute inset-0 bg-[#1e0a1b] bg-[radial-gradient(#2a1127_1px,transparent_1px)] [background-size:20px_20px] flex items-center justify-center overflow-hidden">
               {repo.isAnalyzed ? (
-                <GraphViewer 
-                  graph={currentGraph} 
-                  isLoading={isLoading}
-                />
+                <div id="cy-wrapper" className="absolute inset-0 w-full h-full">
+                  <GraphViewer graph={currentGraph} isLoading={isLoading} />
+                </div>
               ) : (
-                <div className="h-full flex items-center justify-center p-4">
-                  <div className="text-center max-w-sm">
-                    <LayoutGrid className="w-12 h-12 sm:w-16 sm:h-16 text-slate-600 mx-auto mb-4" />
-                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
-                      Repository not analyzed yet
-                    </h3>
-                    <p className="text-sm text-slate-400 mb-6">
-                      Click "Analyze Repository" to generate an interactive dependency graph of your codebase.
-                    </p>
-                    <button
-                      onClick={handleAnalyze}
-                      disabled={isLoading}
-                      className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 w-full sm:w-auto"
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="w-5 h-5" />
-                          Start Analysis
-                        </>
-                      )}
-                    </button>
+                <div className="text-center z-10 max-w-sm px-4">
+                  <div className="size-20 mx-auto rounded-2xl bg-[#191022] border border-[#5e2d52] flex items-center justify-center mb-6 shadow-2xl">
+                    <span className="material-symbols-outlined text-4xl text-slate-400">account_tree</span>
                   </div>
+                  <h2 className="text-2xl font-serif text-milk mb-3">Graph Not Rendered</h2>
+                  <p className="text-slate-400 text-sm mb-8">Initiate the analysis sequence to construct a spatial representation of this codebase.</p>
+                  <button
+                    onClick={handleAnalyze}
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-[#7B4FA6] to-[#C084FC] text-white px-8 h-12 rounded-full text-sm font-bold shadow-xl shadow-[#7B4FA6]/20 transition-transform hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto cursor-pointer disabled:opacity-50"
+                  >
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span className="material-symbols-outlined text-[18px]">play_arrow</span>}
+                    INITIALIZE ANALYSIS
+                  </button>
+                </div>
+              )}
+              {repo.isAnalyzed && currentGraph && (
+                <div className="absolute top-6 left-6 z-10 hidden sm:flex gap-2">
+                  <button className="h-10 px-4 bg-[#191022]/80 backdrop-blur-md border border-[#5e2d52] rounded-full text-slate-300 hover:text-milk text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors shadow-lg">
+                    <span className="material-symbols-outlined text-[18px]">zoom_in</span>
+                  </button>
+                  <button className="h-10 px-4 bg-[#191022]/80 backdrop-blur-md border border-[#5e2d52] rounded-full text-slate-300 hover:text-milk text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors shadow-lg">
+                    <span className="material-symbols-outlined text-[18px]">zoom_out</span>
+                  </button>
+                  <button className="h-10 px-4 bg-[#191022]/80 backdrop-blur-md border border-[#5e2d52] rounded-full text-slate-300 hover:text-milk text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors shadow-lg">
+                    <span className="material-symbols-outlined text-[18px]">center_focus_strong</span>
+                  </button>
                 </div>
               )}
             </div>
-
-            {/* Sidebar - collapsible on mobile */}
-            <GraphSidebar currentGraph={currentGraph} />
           </div>
-        )}
 
-        {activeTab === 'files' && (
-          <FileExplorer repository={repo} />
-        )}
+          {/* Files Tab */}
+          {mountedTabs.has('files') && (
+            <div className={`absolute inset-0 h-full ${activeTab === 'files' ? 'block' : 'hidden'}`}>
+              <FileExplorer repository={repo} />
+            </div>
+          )}
 
-        {activeTab === 'docs' && (
-          <DocumentationPanel repository={repo} />
-        )}
+          {/* Docs Tab */}
+          {mountedTabs.has('docs') && (
+            <div className={`absolute inset-0 h-full ${activeTab === 'docs' ? 'block' : 'hidden'}`}>
+              <DocumentationPanel repository={repo} />
+            </div>
+          )}
 
-        {activeTab === 'chat' && (
-          <AIChat repository={repo} />
-        )}
+          {/* Chat Tab */}
+          {mountedTabs.has('chat') && (
+            <div className={`absolute inset-0 h-full ${activeTab === 'chat' ? 'block' : 'hidden'}`}>
+              <AIChat repository={repo} />
+            </div>
+          )}
+        </main>
       </div>
+
+      {/* Right Sidebar (Specific to Graph View) */}
+      {activeTab === 'graph' && <GraphSidebar currentGraph={currentGraph} />}
     </div>
   )
 }
 
-// Graph Sidebar Component - Responsive with mobile toggle
 interface GraphSidebarProps {
   currentGraph: CodeGraph | null
 }
 
 function GraphSidebar({ currentGraph }: GraphSidebarProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const { visibleNodeTypes, toggleNodeType, setSearchQuery } = useGraphStore()
 
   const sidebarContent = (
-    <>
-      <h3 className="font-semibold text-white mb-4">Graph Filters</h3>
-      
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Search nodes..."
-          className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-        />
+    <div className="flex flex-col h-full bg-[#191022] w-full">
+      <div className="mb-8">
+        <h3 className="font-serif italic text-xl text-milk mb-6">Display Filters</h3>
+        <div className="relative mb-6">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary text-sm font-bold">search</span>
+          <input
+            type="text"
+            className="w-full bg-[#2a1127] border border-[#5e2d52] rounded-xl py-2.5 pl-11 pr-4 text-sm text-milk placeholder:text-slate-600 focus:outline-none focus:border-primary/50 transition-all font-mono"
+            placeholder="Query node..."
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-3">
+          {[
+            { id: 'file', label: 'File References', icon: 'description', color: 'text-emerald-400' },
+            { id: 'folder', label: 'Directory Structures', icon: 'folder', color: 'text-indigo-400' },
+            { id: 'function', label: 'Function Calls', icon: 'data_object', color: 'text-primary' },
+            { id: 'class', label: 'Object Classes', icon: 'category', color: 'text-rose-400' }
+          ].map(type => (
+            <label key={type.id} className="flex items-center justify-between p-3 bg-[#2a1127]/50 border border-[#5e2d52] rounded-xl cursor-pointer hover:border-primary/50 transition-colors group">
+              <div className="flex items-center gap-3">
+                <span className={`material-symbols-outlined text-[20px] ${type.color}`}>{type.icon}</span>
+                <span className="text-sm text-slate-300 font-medium group-hover:text-milk transition-colors">{type.label}</span>
+              </div>
+              <div className="relative inline-flex items-center">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={visibleNodeTypes.has(type.id as any)}
+                  onChange={() => toggleNodeType(type.id as any)}
+                />
+                <div className="w-9 h-5 bg-[#4a2040] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              </div>
+            </label>
+          ))}
+        </div>
       </div>
 
-      {/* Node Types */}
-      <div className="space-y-2">
-        {['file', 'folder', 'function', 'class', 'import'].map((type) => (
-          <label key={type} className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              defaultChecked
-              className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-indigo-600 focus:ring-indigo-500"
-            />
-            <span className="text-sm text-slate-300 capitalize">{type}s</span>
-          </label>
-        ))}
-      </div>
-
-      {/* Stats */}
       {currentGraph && (
-        <div className="mt-6 pt-6 border-t border-slate-700">
-          <h4 className="text-sm font-medium text-slate-400 mb-3">Graph Statistics</h4>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-800 rounded-lg p-3">
-              <p className="text-2xl font-bold text-white">{currentGraph.nodeCount}</p>
-              <p className="text-xs text-slate-400">Nodes</p>
+        <div className="mt-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="material-symbols-outlined text-sm text-slate-500">analytics</span>
+            <h4 className="text-xs font-mono uppercase tracking-widest text-slate-500">Topology Stats</h4>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-[#2a1127]/50 border border-[#5e2d52] rounded-xl p-4 flex flex-col justify-center">
+              <span className="text-3xl font-serif text-milk italic leading-none mb-1">{currentGraph.nodeCount.toLocaleString()}</span>
+              <span className="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Total Nodes</span>
             </div>
-            <div className="bg-slate-800 rounded-lg p-3">
-              <p className="text-2xl font-bold text-white">{currentGraph.edgeCount}</p>
-              <p className="text-xs text-slate-400">Edges</p>
-            </div>
-            <div className="bg-slate-800 rounded-lg p-3">
-              <p className="text-2xl font-bold text-white">{currentGraph.fileNodes.length}</p>
-              <p className="text-xs text-slate-400">Files</p>
-            </div>
-            <div className="bg-slate-800 rounded-lg p-3">
-              <p className="text-2xl font-bold text-white">{currentGraph.functionNodes.length}</p>
-              <p className="text-xs text-slate-400">Functions</p>
+            <div className="bg-[#2a1127]/50 border border-[#5e2d52] rounded-xl p-4 flex flex-col justify-center">
+              <span className="text-3xl font-serif text-primary italic leading-none mb-1">{currentGraph.edgeCount.toLocaleString()}</span>
+              <span className="text-[10px] font-mono uppercase text-primary/60 tracking-wider">Active Edges</span>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 
   return (
     <>
-      {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed bottom-4 right-4 z-30 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
+        className="lg:hidden fixed bottom-6 right-6 z-50 size-14 flex items-center justify-center bg-primary text-white rounded-full shadow-2xl shadow-primary/40 cursor-pointer"
       >
-        {isOpen ? <X className="w-5 h-5" /> : <Filter className="w-5 h-5" />}
+        {isOpen ? <X className="w-6 h-6" /> : <Filter className="w-6 h-6" />}
       </button>
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-80 border-l border-slate-700 bg-slate-800/30 overflow-y-auto">
-        <div className="p-4">
-          {sidebarContent}
-        </div>
-      </div>
+      <aside className="w-80 border-l border-[#5e2d52] flex flex-col pt-6 px-6 fixed right-0 top-16 bottom-0 bg-[#191022] z-30 hidden lg:flex">
+        {sidebarContent}
+      </aside>
 
       {/* Mobile Sidebar Overlay */}
       {isOpen && (
-        <>
-          <div 
-            className="lg:hidden fixed inset-0 bg-black/50 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="lg:hidden fixed right-0 top-0 h-full w-80 border-l border-slate-700 bg-slate-800 z-50 overflow-y-auto">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white">Graph Filters</h3>
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 text-slate-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              {sidebarContent}
-            </div>
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setIsOpen(false)}>
+          <div
+            className="absolute right-0 top-0 bottom-0 w-80 max-w-[80vw] bg-[#191022] border-l border-[#5e2d52] p-6 flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {sidebarContent}
           </div>
-        </>
+        </div>
       )}
     </>
   )

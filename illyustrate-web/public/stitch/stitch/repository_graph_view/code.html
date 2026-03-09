@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f13ec",
+                        "aquamarine": "#7FFFD4",
+                        "rose-accent": "#E05C8A",
+                        "lavender-accent": "#C084FC",
+                        "gold-accent": "#FFD700",
+                        "plum-accent": "#8E44AD",
+                        "milk-accent": "#F5F5F5",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#0a0008",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "mono": ["DM Mono", "monospace"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .graph-canvas {
+            background-color: #0a0008;
+            background-image: radial-gradient(circle at 2px 2px, rgba(127, 19, 236, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+        .node-shimmer {
+            box-shadow: 0 0 15px rgba(127, 255, 212, 0.4);
+        }
+        .edge-dashed {
+            stroke-dasharray: 4;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- TopNavBar Component -->
+<header class="flex items-center justify-between border-b border-white/10 bg-background-dark/80 backdrop-blur-md px-8 py-4 z-50">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">account_tree</span>
+</div>
+<h2 class="text-xl font-extrabold tracking-tighter uppercase italic">ILLYUSTRATE</h2>
+</div>
+<div class="h-8 w-[1px] bg-white/10"></div>
+<div class="flex flex-col font-mono text-xs">
+<span class="text-aquamarine">main_branch</span>
+<span class="text-white/40">commit: 8f2d9e1</span>
+</div>
+</div>
+<!-- Pill Tab Bar -->
+<nav class="flex bg-white/5 p-1 rounded-full border border-white/10">
+<a class="px-6 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" href="#">Code</a>
+<a class="px-6 py-1.5 rounded-full text-sm font-medium bg-primary text-white shadow-lg shadow-primary/20 transition-all" href="#">Graph</a>
+<a class="px-6 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" href="#">History</a>
+<a class="px-6 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" href="#">Insights</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="px-5 py-2 rounded-full border border-aquamarine text-aquamarine text-xs font-bold uppercase tracking-widest hover:bg-aquamarine hover:text-background-dark transition-all duration-300">
+                    Analyze Repository
+                </button>
+<div class="size-10 rounded-full border-2 border-primary/50 overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="User avatar with purple gradient background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-ux4Z5CArfHmpY7BlzTyuQ718eaE7W6WZNA2T_Wk9P5DtwJ5ll4t36C6aKQyTA1DLmBKr5nuh_3C60SOod3erta9RyQszLIp7v2mwdaUY9dYg2Vt-eBhzHjL5AlJaCyS8hVTC0DpwUbREOQHjJ4NNJCpRj8ROYBjZvUsHRCE3e2RtNijg87WIs92351i05w2Hm0t8TJiD97zTH2Cko805eCDhN_EbDrF8D1JBtMTuyqtWolQKRyh-sAQN7ZI0NdY7Ineyj8cf2s8"/>
+</div>
+</div>
+</header>
+<main class="flex flex-1 overflow-hidden relative">
+<!-- Interactive Graph Canvas -->
+<div class="flex-1 relative graph-canvas overflow-hidden">
+<!-- SVG Graph Representation -->
+<svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+<!-- Dashed Lavender Edges -->
+<path class="opacity-40" d="M 200 300 Q 400 250 600 400" fill="none" stroke="#C084FC" stroke-dasharray="4 4" stroke-width="1.5"></path>
+<path class="opacity-40" d="M 600 400 Q 750 350 900 500" fill="none" stroke="#C084FC" stroke-dasharray="4 4" stroke-width="1.5"></path>
+<path class="opacity-40" d="M 600 400 L 550 600" fill="none" stroke="#C084FC" stroke-dasharray="4 4" stroke-width="1.5"></path>
+<path class="opacity-40" d="M 200 300 L 150 500" fill="none" stroke="#C084FC" stroke-dasharray="4 4" stroke-width="1.5"></path>
+<!-- Nodes -->
+<!-- Folder: Plum -->
+<circle class="cursor-pointer" cx="200" cy="300" fill="#8E44AD" r="16"></circle>
+<circle class="cursor-pointer" cx="600" cy="400" fill="#8E44AD" r="22"></circle>
+<!-- File: Milk -->
+<circle class="cursor-pointer" cx="150" cy="500" fill="#F5F5F5" r="10"></circle>
+<circle class="cursor-pointer" cx="550" cy="600" fill="#F5F5F5" r="10"></circle>
+<!-- Function: Aquamarine Shimmer -->
+<circle class="node-shimmer cursor-pointer" cx="900" cy="500" fill="#7FFFD4" r="8"></circle>
+<circle class="node-shimmer cursor-pointer" cx="850" cy="450" fill="#7FFFD4" r="8"></circle>
+<!-- Class: Rose -->
+<circle class="cursor-pointer" cx="400" cy="200" fill="#E05C8A" r="14"></circle>
+<!-- Import: Gold -->
+<circle class="cursor-pointer" cx="700" cy="150" fill="#FFD700" r="12"></circle>
+</svg>
+<!-- Floating Stats Pill -->
+<div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 p-1.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full">
+<div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/5">
+<span class="text-xs uppercase tracking-tighter text-white/40">Nodes</span>
+<span class="font-mono text-aquamarine font-bold">1,284</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/5">
+<span class="text-xs uppercase tracking-tighter text-white/40">Edges</span>
+<span class="font-mono text-lavender-accent font-bold">3,412</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/5">
+<span class="text-xs uppercase tracking-tighter text-white/40">Files</span>
+<span class="font-mono text-rose-accent font-bold">156</span>
+</div>
+</div>
+<!-- Floating Zoom Controls -->
+<div class="absolute bottom-8 left-8 flex flex-col gap-2">
+<button class="size-10 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-white transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="size-10 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-white transition-colors">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<button class="size-10 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-white transition-colors">
+<span class="material-symbols-outlined">near_me</span>
+</button>
+</div>
+<!-- Floating Legend Card -->
+<div class="absolute top-8 left-8 p-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl w-48">
+<h3 class="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Legend</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="size-2.5 rounded-full bg-plum-accent"></div>
+<span class="text-xs text-white/70">Folder</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-2.5 rounded-full bg-milk-accent"></div>
+<span class="text-xs text-white/70">File</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-2.5 rounded-full bg-aquamarine node-shimmer"></div>
+<span class="text-xs text-white/70">Function</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-2.5 rounded-full bg-rose-accent"></div>
+<span class="text-xs text-white/70">Class</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-2.5 rounded-full bg-gold-accent"></div>
+<span class="text-xs text-white/70">Import</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Filters & Stats -->
+<aside class="w-80 border-l border-white/10 bg-[#4a2040]/30 backdrop-blur-md p-6 overflow-y-auto">
+<div class="space-y-8">
+<!-- Search -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-lg">search</span>
+<input class="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-aquamarine transition-all placeholder:text-white/20" placeholder="Search nodes..." type="text"/>
+</div>
+<!-- Filter Section -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xs font-bold uppercase tracking-widest text-aquamarine">Graph Filters</h3>
+<span class="material-symbols-outlined text-white/40 text-lg">tune</span>
+</div>
+<div class="space-y-3">
+<label class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+<span class="text-xs font-medium text-white/80">Internal deps</span>
+<input checked="" class="rounded bg-background-dark border-white/20 text-primary focus:ring-primary" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+<span class="text-xs font-medium text-white/80">External packages</span>
+<input class="rounded bg-background-dark border-white/20 text-primary focus:ring-primary" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+<span class="text-xs font-medium text-white/80">Cycle detection</span>
+<input checked="" class="rounded bg-background-dark border-white/20 text-primary focus:ring-primary" type="checkbox"/>
+</label>
+</div>
+</section>
+<!-- Stats Card -->
+<section>
+<h3 class="text-xs font-bold uppercase tracking-widest text-lavender-accent mb-4">Health Metrics</h3>
+<div class="grid grid-cols-1 gap-3">
+<div class="p-4 rounded-xl bg-gradient-to-br from-white/10 to-transparent border border-white/10">
+<p class="text-[10px] text-white/40 uppercase mb-1">Cohesion Score</p>
+<p class="text-2xl font-mono text-white">84<span class="text-sm text-aquamarine">%</span></p>
+<div class="w-full h-1 bg-white/5 mt-3 rounded-full overflow-hidden">
+<div class="h-full bg-aquamarine w-[84%]"></div>
+</div>
+</div>
+<div class="p-4 rounded-xl bg-gradient-to-br from-white/10 to-transparent border border-white/10">
+<p class="text-[10px] text-white/40 uppercase mb-1">Coupling Index</p>
+<p class="text-2xl font-mono text-white">0.32</p>
+<div class="w-full h-1 bg-white/5 mt-3 rounded-full overflow-hidden">
+<div class="h-full bg-lavender-accent w-[32%]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Highlights -->
+<section>
+<h3 class="text-xs font-bold uppercase tracking-widest text-rose-accent mb-4">Anomalies</h3>
+<div class="space-y-2">
+<div class="flex items-start gap-3 p-3 rounded-lg bg-rose-accent/10 border border-rose-accent/20">
+<span class="material-symbols-outlined text-rose-accent text-sm mt-0.5">warning</span>
+<div>
+<p class="text-xs font-bold text-white">Circular dependency</p>
+<p class="text-[10px] text-white/50">auth.ts → logger.ts → auth.ts</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 rounded-lg bg-gold-accent/10 border border-gold-accent/20">
+<span class="material-symbols-outlined text-gold-accent text-sm mt-0.5">info</span>
+<div>
+<p class="text-xs font-bold text-white">Unused export</p>
+<p class="text-[10px] text-white/50">utils/parsers.ts (3 functions)</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</aside>
+</main>
+<!-- Footer / Status Bar -->
+<footer class="h-8 bg-background-dark border-t border-white/5 flex items-center justify-between px-6">
+<div class="flex items-center gap-4 text-[10px] uppercase tracking-widest text-white/30">
+<span class="flex items-center gap-1"><span class="size-1.5 rounded-full bg-green-500"></span> Engine Live</span>
+<span>Worker Threads: 4</span>
+<span>Layout: Force-Directed</span>
+</div>
+<div class="text-[10px] font-mono text-aquamarine/50">
+                RENDERING: 16.4ms
+            </div>
+</footer>
+</div>
+</body></html>

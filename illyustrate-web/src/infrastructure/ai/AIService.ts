@@ -3,7 +3,7 @@ import type { Documentation, ChatMessage } from '@shared/types';
 
 export interface AIConfig {
   provider: 'gemini' | 'groq' | 'openai';
-  apiKey: string;
+  apiKeys: string[];
   model?: string;
 }
 
@@ -25,16 +25,28 @@ export interface ChatRequest {
 
 export class AIService {
   private config: AIConfig;
+  private currentKeyIndex: number = 0;
 
   constructor(config: AIConfig) {
     this.config = config;
   }
 
+  private get currentApiKey(): string {
+    return this.config.apiKeys[this.currentKeyIndex] || this.config.apiKeys[0];
+  }
+
+  private rotateKey() {
+    if (this.config.apiKeys.length > 1) {
+      this.currentKeyIndex = (this.currentKeyIndex + 1) % this.config.apiKeys.length;
+      console.warn(`[AIService] Rotating to next API key (Index: ${this.currentKeyIndex})`);
+    }
+  }
+
   async generateDocumentation(request: GenerateDocsRequest): Promise<Omit<Documentation, 'id' | 'repositoryId'>> {
     const prompt = this.buildDocsPrompt(request);
-    
+
     const response = await this.callAI(prompt);
-    
+
     try {
       const parsed = JSON.parse(response);
       return {
@@ -116,111 +128,84 @@ Focus on:
   private async callAI(prompt: string): Promise<string> {
     switch (this.config.provider) {
       case 'gemini':
-        return this.callGemini(prompt);
+        return this.callWithRotation(prompt, (p, key) => this.callGemini(p, key));
       case 'groq':
-        return this.callGroq(prompt);
+        return this.callWithRotation(prompt, (p, key) => this.callGroq(p, key));
       case 'openai':
-        return this.callOpenAI(prompt);
+        return this.callWithRotation(prompt, (p, key) => this.callOpenAI(p, key));
       default:
         throw new Error(`Unsupported AI provider: ${this.config.provider}`);
     }
   }
 
-  private async callGemini(prompt: string): Promise<string> {
+  private async callWithRotation(prompt: string, callFn: (p: string, key: string) => Promise<string>): Promise<string> {
+    const maxTotalRetries = Math.max(this.config.apiKeys.length * 2, 5);
+    let attempts = 0;
+
+    while (attempts < maxTotalRetries) {
+      try {
+        return await callFn(prompt, this.currentApiKey);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 429) {
+          attempts++;
+          if (attempts < maxTotalRetries) {
+            console.warn(`[AIService] Rate limited on key ${this.currentKeyIndex + 1}. Attempting rotation...`);
+            this.rotateKey();
+            // Small delay before retrying with new key
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+        }
+        throw error;
+      }
+    }
+    throw new Error('All API keys rate limited or max retries exceeded');
+  }
+
+  private async callGemini(prompt: string, apiKey: string): Promise<string> {
     const model = this.config.model || 'gemini-pro';
-    const maxRetries = 3;
-    const baseDelay = 1000; // 1 second
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const response = await axios.post(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-          {
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 2048,
-            },
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': this.config.apiKey,
-            },
-          }
-        );
-
-        return response.data.candidates[0]?.content?.parts[0]?.text || '';
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          // Handle rate limiting (429)
-          if (error.response?.status === 429) {
-            if (attempt < maxRetries - 1) {
-              const delay = baseDelay * Math.pow(2, attempt); // Exponential backoff
-              console.warn(`Rate limited. Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
-              await new Promise(resolve => setTimeout(resolve, delay));
-              continue;
-            }
-            throw new Error('Rate limit exceeded. Please wait a moment and try again. The free tier has limited requests per minute.');
-          }
-          
-          // Handle other API errors
-          const errorMessage = error.response?.data?.error?.message || error.message;
-          throw new Error(`Gemini API error: ${errorMessage}`);
-        }
-        throw error;
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2048,
+        },
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
       }
-    }
+    );
 
-    throw new Error('Max retries exceeded');
+    return response.data.candidates[0]?.content?.parts[0]?.text || '';
   }
 
-  private async callGroq(prompt: string): Promise<string> {
+  private async callGroq(prompt: string, apiKey: string): Promise<string> {
     const model = this.config.model || 'llama-3.3-70b-versatile';
-    const maxRetries = 3;
-    const baseDelay = 1000;
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const response = await axios.post(
-          'https://api.groq.com/openai/v1/chat/completions',
-          {
-            model,
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.3,
-            max_tokens: 2048,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${this.config.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        return response.data.choices[0]?.message?.content || '';
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 429) {
-            if (attempt < maxRetries - 1) {
-              const delay = baseDelay * Math.pow(2, attempt);
-              console.warn(`Rate limited. Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
-              await new Promise(resolve => setTimeout(resolve, delay));
-              continue;
-            }
-            throw new Error('Rate limit exceeded. Please wait a moment and try again.');
-          }
-          const errorMessage = error.response?.data?.error?.message || error.message;
-          throw new Error(`Groq API error: ${errorMessage}`);
-        }
-        throw error;
+    const response = await axios.post(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+        max_tokens: 2048,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
       }
-    }
+    );
 
-    throw new Error('Max retries exceeded');
+    return response.data.choices[0]?.message?.content || '';
   }
 
-  private async callOpenAI(prompt: string): Promise<string> {
+  private async callOpenAI(prompt: string, apiKey: string): Promise<string> {
     const model = this.config.model || 'gpt-4';
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
@@ -232,7 +217,7 @@ Focus on:
       },
       {
         headers: {
-          Authorization: `Bearer ${this.config.apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
       }

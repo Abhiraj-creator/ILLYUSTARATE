@@ -11,11 +11,11 @@ interface GraphState {
   isLoading: boolean;
   error: string | null;
   layout: 'cose' | 'hierarchical' | 'circle' | 'grid';
-  
+
   // Filters
   visibleNodeTypes: Set<GraphNode['type']>;
   searchQuery: string;
-  
+
   // Actions
   loadGraph: (repositoryId: string) => Promise<void>;
   generateGraph: (repositoryId: string, owner: string, name: string, accessToken: string) => Promise<void>;
@@ -38,7 +38,7 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
 
   loadGraph: async (repositoryId: string) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const { data, error } = await supabase
         .from('graphs')
@@ -73,23 +73,53 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
 
   generateGraph: async (repositoryId: string, owner: string, name: string, accessToken: string) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const github = new GitHubApi(accessToken);
       const parser = CodeParser.getInstance();
-      
+
       // Get repository tree
       const treeItems = await github.getRepoTree(owner, name);
-      
+
+      // Comprehensive list of paths/patterns to ignore (gitignore-like)
+      const IGNORED_PATH_SEGMENTS = [
+        'node_modules', '.git', 'dist', 'build', 'out', '.next', '.nuxt',
+        '.cache', 'coverage', '.nyc_output', '.vscode', '.idea', '__pycache__',
+        '.pytest_cache', 'venv', 'env', '.env', '.tox', 'vendor', 'bower_components',
+        'jspm_packages', '.yarn', '.pnp', 'packages/*/node_modules',
+      ];
+      const IGNORED_EXTENSIONS = [
+        '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp', '.bmp',
+        '.mp4', '.webm', '.mov', '.mp3', '.wav', '.ogg', '.ttf', '.woff',
+        '.woff2', '.eot', '.pdf', '.zip', '.tar', '.gz', '.lock',
+        '.min.js', '.min.css', '.map', '.snap', '.bin', '.exe',
+      ];
+      const IGNORED_FILENAMES = [
+        'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb',
+        'Thumbs.db', '.DS_Store', '.gitignore', '.gitattributes',
+      ];
+
+      const shouldIgnore = (path: string): boolean => {
+        const lowerPath = path.toLowerCase();
+        if (IGNORED_PATH_SEGMENTS.some(seg => lowerPath.includes(`/${seg}/`) || lowerPath.startsWith(`${seg}/`) || lowerPath === seg)) return true;
+        if (IGNORED_EXTENSIONS.some(ext => lowerPath.endsWith(ext))) return true;
+        const filename = path.split('/').pop() || '';
+        if (IGNORED_FILENAMES.includes(filename)) return true;
+        return false;
+      };
+
       const nodes: GraphNode[] = [];
       const edges: GraphEdge[] = [];
       const fileNodes = new Map<string, string>(); // path -> nodeId
 
-      // Create folder nodes
+      // Filter tree items
+      const cleanTreeItems = treeItems.filter(item => !shouldIgnore(item.path));
+
+      // Create folder nodes (only from clean items)
       const folders = new Set<string>();
-      treeItems.forEach(item => {
+      cleanTreeItems.forEach(item => {
         const parts = item.path.split('/');
-        parts.pop(); // Remove file name
+        parts.pop();
         let currentPath = '';
         parts.forEach(part => {
           currentPath = currentPath ? `${currentPath}/${part}` : part;
@@ -106,7 +136,6 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
           path: folder,
         });
 
-        // Create parent-child folder relationships
         const parentPath = folder.split('/').slice(0, -1).join('/');
         if (parentPath && folders.has(parentPath)) {
           edges.push({
@@ -118,15 +147,14 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
         }
       });
 
-      // Parse files and create nodes
-      const codeFiles = treeItems.filter(item => 
-        item.type === 'blob' && 
-        !item.path.includes('node_modules/') &&
-        !item.path.includes('.git/') &&
-        !item.path.startsWith('.')
+      // Parse code files only — capped at 60 for performance
+      const codeExts = ['js', 'jsx', 'ts', 'tsx', 'py', 'java', 'go', 'rs', 'php', 'rb', 'cs', 'cpp', 'c', 'h', 'swift', 'kt'];
+      const codeFiles = cleanTreeItems.filter(item =>
+        item.type === 'blob' &&
+        codeExts.includes(item.path.split('.').pop()?.toLowerCase() || '')
       );
 
-      for (const file of codeFiles.slice(0, 100)) { // Limit to first 100 files for performance
+      for (const file of codeFiles.slice(0, 60)) { // Cap at 60 files for a clean, fast graph
         try {
           const content = await github.getFileContent(owner, name, file.path);
           const parsed = await parser.parseFile(file.path, content);
@@ -135,7 +163,7 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
             // Add file node
             const fileId = `file:${file.path}`;
             fileNodes.set(file.path, fileId);
-            
+
             nodes.push({
               id: fileId,
               type: 'file',
@@ -181,46 +209,7 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
         }
       }
 
-      // Create inter-file import edges
-      for (const file of codeFiles.slice(0, 100)) {
-        try {
-          const content = await github.getFileContent(owner, name, file.path);
-          const parsed = await parser.parseFile(file.path, content);
-          
-          if (parsed) {
-            const sourceId = fileNodes.get(file.path);
-            if (!sourceId) continue;
-
-            // Try to resolve imports to file paths
-            for (const imp of parsed.imports) {
-              // Simple resolution - in real app, this would be more sophisticated
-              const possiblePaths = [
-                imp,
-                `${imp}.js`,
-                `${imp}.ts`,
-                `${imp}/index.js`,
-                `${imp}/index.ts`,
-              ];
-
-              for (const possiblePath of possiblePaths) {
-                const targetId = fileNodes.get(possiblePath);
-                if (targetId && targetId !== sourceId) {
-                  edges.push({
-                    id: `edge:import:${file.path}:${possiblePath}`,
-                    source: sourceId,
-                    target: targetId,
-                    type: 'imports',
-                    label: imp,
-                  });
-                  break;
-                }
-              }
-            }
-          }
-        } catch (error) {
-          console.warn(`Failed to process imports for ${file.path}:`, error);
-        }
-      }
+      // Note: inter-file import edges are resolved during the first pass above.
 
       // Save graph to database
       const { data: savedGraph, error: saveError } = await supabase
@@ -284,7 +273,7 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
 
     return currentGraph.nodes.filter(node => {
       const typeVisible = visibleNodeTypes.has(node.type);
-      const matchesSearch = !searchQuery || 
+      const matchesSearch = !searchQuery ||
         node.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
         node.path.toLowerCase().includes(searchQuery.toLowerCase());
       return typeVisible && matchesSearch;
@@ -294,10 +283,10 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
   getFilteredEdges: () => {
     const { currentGraph } = get();
     const visibleNodes = new Set(get().getFilteredNodes().map(n => n.id));
-    
+
     if (!currentGraph) return [];
 
-    return currentGraph.edges.filter(edge => 
+    return currentGraph.edges.filter(edge =>
       visibleNodes.has(edge.source) && visibleNodes.has(edge.target)
     );
   },

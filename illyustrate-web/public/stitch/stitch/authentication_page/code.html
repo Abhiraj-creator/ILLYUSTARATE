@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&amp;family=Lora:ital,wght@0,400..700;1,400..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#7B4FA6",
+                "accent-glow": "#C084FC",
+                "plum-deep": "#381932",
+                "plum-card": "#4a2040",
+                "milk": "#fff3e6",
+                "background-dark": "#191022",
+              },
+              fontFamily: {
+                "display": ["Manrope", "sans-serif"],
+                "playfair": ["Playfair Display", "serif"],
+                "mono": ["DM Mono", "monospace"],
+                "lora": ["Lora", "serif"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        .mesh-gradient {
+            background-color: #381932;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(123, 79, 166, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(192, 132, 252, 0.2) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(56, 25, 50, 0.5) 0px, transparent 80%);
+        }
+        .blurred-bg {
+            background: radial-gradient(circle at center, rgba(123, 79, 166, 0.15) 0%, rgba(25, 16, 34, 1) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-display text-slate-100 antialiased overflow-hidden">
+<div class="flex min-h-screen w-full">
+<aside class="w-[40%] mesh-gradient border-r border-white/5 flex flex-col p-12 relative overflow-hidden">
+<div class="flex items-center gap-3 mb-16 z-10">
+<div class="relative flex items-center justify-center size-10 bg-primary/20 rounded-lg border border-primary/50 shadow-[0_0_15px_rgba(123,79,166,0.4)]">
+<span class="material-symbols-outlined text-accent-glow text-2xl">hexagon</span>
+</div>
+<h1 class="text-milk font-bold text-2xl tracking-tight">ILLYUSTRATE</h1>
+</div>
+<div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full z-10">
+<div class="mb-8">
+<h2 class="text-3xl font-playfair text-milk mb-2">Welcome Back</h2>
+<p class="text-milk/60 font-lora italic">Enter your credentials to access the grid.</p>
+</div>
+<div class="bg-black/20 p-1 rounded-full flex mb-8 border border-white/5">
+<button class="flex-1 py-2 px-6 rounded-full text-sm font-bold bg-primary text-white shadow-lg transition-all">Sign In</button>
+<button class="flex-1 py-2 px-6 rounded-full text-sm font-bold text-milk/60 hover:text-milk transition-all">Sign Up</button>
+</div>
+<div class="space-y-4">
+<button class="w-full flex items-center justify-center gap-3 px-6 h-14 rounded-xl border border-[#5e2d52] bg-plum-deep/50 hover:bg-plum-deep transition-all text-milk text-sm font-medium relative overflow-hidden">
+<span class="material-symbols-outlined text-lg">terminal</span>
+<span>Continue with GitHub</span>
+<span class="absolute right-3 top-3 bg-[#7df9ff] text-plum-deep text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">New</span>
+</button>
+<div class="flex items-center gap-4 my-6">
+<div class="h-[1px] flex-1 bg-white/10"></div>
+<span class="text-xs uppercase tracking-widest text-milk/30 font-mono">or email</span>
+<div class="h-[1px] flex-1 bg-white/10"></div>
+</div>
+<div class="space-y-4">
+<div class="group">
+<label class="block text-xs font-mono uppercase tracking-widest text-milk/40 mb-2 ml-1">Work Email</label>
+<input class="w-full h-14 bg-plum-deep/40 border border-white/10 rounded-xl px-4 text-milk placeholder:text-milk/20 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" placeholder="dev@illyustrate.io" type="email"/>
+</div>
+<div class="group">
+<div class="flex justify-between items-end mb-2 ml-1">
+<label class="block text-xs font-mono uppercase tracking-widest text-milk/40">Password</label>
+<a class="text-[10px] text-primary hover:text-accent-glow uppercase tracking-tighter" href="#">Forgot?</a>
+</div>
+<input class="w-full h-14 bg-plum-deep/40 border border-white/10 rounded-xl px-4 text-milk placeholder:text-milk/20 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<button class="w-full mt-6 h-14 rounded-xl bg-gradient-to-r from-primary to-accent-glow text-white font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        Sign In to Dashboard
+                    </button>
+</div>
+</div>
+<footer class="mt-auto z-10 pt-8">
+<p class="text-[11px] font-mono text-milk/20 uppercase tracking-[0.2em]">© 2024 ILLYUSTRATE Labs / Secure Authentication</p>
+</footer>
+</aside>
+<main class="w-[60%] blurred-bg relative flex flex-col p-20 justify-center">
+<div class="max-w-3xl">
+<h2 class="text-6xl font-playfair text-milk leading-tight mb-16">
+                    Why developers love <br/>
+<span class="italic text-primary">ILLYUSTRATE</span>
+</h2>
+<div class="grid grid-cols-2 gap-8 relative">
+<div class="bg-plum-card/40 border border-white/5 p-8 rounded-2xl backdrop-blur-sm transform hover:-translate-y-2 transition-all duration-500">
+<div class="size-12 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+</div>
+<h3 class="text-xl font-bold text-milk mb-3">Interactive Code Graphs</h3>
+<p class="text-milk/50 font-lora leading-relaxed text-sm">Visualize your entire repository architecture in 3D node-based environments. Understand dependencies instantly.</p>
+</div>
+<div class="bg-plum-card/40 border border-white/5 p-8 rounded-2xl backdrop-blur-sm transform translate-y-12 hover:-translate-y-2 transition-all duration-500">
+<div class="size-12 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+</div>
+<h3 class="text-xl font-bold text-milk mb-3">AI Powered Docs</h3>
+<p class="text-milk/50 font-lora leading-relaxed text-sm">Living documentation that updates itself with every PR. Never worry about stale READMEs again.</p>
+</div>
+<div class="bg-plum-card/40 border border-white/5 p-8 rounded-2xl backdrop-blur-sm transform -translate-y-6 hover:-translate-y-2 transition-all duration-500">
+<div class="size-12 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">forum</span>
+</div>
+<h3 class="text-xl font-bold text-milk mb-3">Codebase Chat</h3>
+<p class="text-milk/50 font-lora leading-relaxed text-sm">Context-aware LLM that knows your specific logic, folder structures, and hidden technical debt.</p>
+</div>
+<div class="bg-plum-card/40 border border-white/5 p-8 rounded-2xl backdrop-blur-sm transform translate-y-6 hover:-translate-y-2 transition-all duration-500">
+<div class="size-12 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">language</span>
+</div>
+<h3 class="text-xl font-bold text-milk mb-3">Multi-Lang Native</h3>
+<p class="text-milk/50 font-lora leading-relaxed text-sm">First-class support for Rust, TS, Go, and Python. Seamlessly switch between polyglot microservices.</p>
+</div>
+</div>
+</div>
+<div class="absolute bottom-10 right-10 flex items-center gap-6 opacity-30">
+<div class="flex -space-x-3">
+<img class="size-10 rounded-full border-2 border-background-dark" data-alt="User profile avatar male developer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFNNzw9wGtyWz68GldvHTn6oX9hra8Qf7a8CggxBw2XgElYd0jc-fZZpyTYnPreWdawV2YJkv-pn-pTfRn3SI7u9UqCXwK9i5PYfYbM8NdorsJKoAODLOkVdPxXdtokQGKENxOWSeVPxvOC4DAfu6cZZeMQg91_kPpSLhYRaqbPCRfV1Kabu9M4rBvqwIavO_h1JF8rK60_u1zErV19QmV2VhGUZN3EvL2uanzP_G90eM9JFH7WPD5Nv9YPUtiGu6-2V6EAZL4TgI"/>
+<img class="size-10 rounded-full border-2 border-background-dark" data-alt="User profile avatar female engineer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvLTaeJpOx4PYN3-NyZ9FGiWtlZpvb_LLyLBgDfLP7_LRAVHY1knsaHc8v6UG9pk1xywY7Xcslwwmw1JtXfoaBUesYih5Qj2DdR_R5BvvxufUX7vmqWiI3TipotoRa1itZLBe88nvfeG94H5fMxMh0X7fzdKgrYgytBHCBo-INidlObGmzYlQ2pm4NyQNbqGaVePeQO8owprMKgkALrJvDShPGqWVi_1Ej2JNow-aDbRaopqpKO0dtlUkVryow1dMFN5lavRXKNWc"/>
+<img class="size-10 rounded-full border-2 border-background-dark" data-alt="User profile avatar senior tech lead" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIruKGkfINAIA1hBIH_pJf5NVr3v2d3fdNkFSiAGbv-LUhGZk7vHz3vn_0OSvnGn8XKUJOGmhSMMgtVLuDboKfeJVw-Vck1_iBPhLHMyWz0dmUJU_TqxSbMx4l8HEnv3_WgdOqq5nPpxrDiRzAv83p8TR6BqgjPvk-iXg5AhjrkBnD9HXolVjxXYwk5utQa9QpgdCeNg6mnnArurQFdyQe9gWx3EubOim8wk8hxBORJ0AKMdSodTtGdbuxxd-itjQhD1eeQmtsTWs"/>
+</div>
+<p class="text-xs font-mono uppercase tracking-widest text-milk">Joined by 12k+ engineers</p>
+</div>
+</main>
+</div>
+</body></html>

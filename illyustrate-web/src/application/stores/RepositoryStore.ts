@@ -9,8 +9,9 @@ interface RepositoryState {
   currentRepository: Repository | null;
   analysisJobs: Map<string, AnalysisJob>;
   isLoading: boolean;
+  isFetchingGitHub: boolean;
   error: string | null;
-  
+
   // Actions
   fetchRepositories: (userId: string) => Promise<void>;
   fetchGitHubRepos: (accessToken: string) => Promise<Repository[]>;
@@ -27,11 +28,12 @@ export const useRepositoryStore = create<RepositoryState>()((set, get) => ({
   currentRepository: null,
   analysisJobs: new Map(),
   isLoading: false,
+  isFetchingGitHub: false,
   error: null,
 
   fetchRepositories: async (userId: string) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const { data, error } = await supabase
         .from('repositories')
@@ -65,29 +67,40 @@ export const useRepositoryStore = create<RepositoryState>()((set, get) => ({
   },
 
   fetchGitHubRepos: async (accessToken: string) => {
-    const github = new GitHubApi(accessToken);
-    const repos = await github.getUserRepos();
-    
-    return repos.map(r => new Repository({
-      id: `github-${r.id}`,
-      owner: r.owner.login,
-      name: r.name,
-      fullName: r.full_name,
-      description: r.description || undefined,
-      url: r.html_url,
-      language: r.language || undefined,
-      stars: r.stargazers_count,
-      isPrivate: r.private,
-      defaultBranch: r.default_branch,
-      size: r.size,
-      status: 'pending',
-      userId: '',
-    }));
+    set({ isFetchingGitHub: true, error: null });
+
+    try {
+      const github = new GitHubApi(accessToken);
+      const repos = await github.getUserRepos();
+
+      const mappedRepos = repos.map(r => new Repository({
+        id: `github-${r.id}`,
+        owner: r.owner.login,
+        name: r.name,
+        fullName: r.full_name,
+        description: r.description || undefined,
+        url: r.html_url,
+        language: r.language || undefined,
+        stars: r.stargazers_count,
+        isPrivate: r.private,
+        defaultBranch: r.default_branch,
+        size: r.size,
+        status: 'pending',
+        userId: '',
+      }));
+
+      set({ isFetchingGitHub: false });
+      return mappedRepos;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch GitHub repositories';
+      set({ error: message, isFetchingGitHub: false });
+      throw error;
+    }
   },
 
   addRepository: async (repoData, userId) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const { data, error } = await supabase
         .from('repositories')
@@ -140,7 +153,7 @@ export const useRepositoryStore = create<RepositoryState>()((set, get) => ({
 
   removeRepository: async (id: string) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const { error } = await supabase
         .from('repositories')
@@ -217,7 +230,7 @@ export const useRepositoryStore = create<RepositoryState>()((set, get) => ({
       if (currentStage < stages.length - 1) {
         currentStage++;
         const progress = Math.min(25 * (currentStage + 1), 95);
-        
+
         const updatedJob: AnalysisJob = {
           ...currentJob,
           status: 'processing',
