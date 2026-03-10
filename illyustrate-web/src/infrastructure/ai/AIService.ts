@@ -21,6 +21,7 @@ export interface ChatRequest {
     currentFile?: string;
     graphContext?: string;
   };
+  signal?: AbortSignal;
 }
 
 export class AIService {
@@ -73,7 +74,7 @@ export class AIService {
 
   async chat(request: ChatRequest): Promise<string> {
     const prompt = this.buildChatPrompt(request);
-    return this.callAI(prompt);
+    return this.callAI(prompt, request.signal);
   }
 
   private buildDocsPrompt(request: GenerateDocsRequest): string {
@@ -125,24 +126,25 @@ Focus on:
     return `${systemPrompt}\n\nConversation:\n${conversation}\n\nAssistant:`;
   }
 
-  private async callAI(prompt: string): Promise<string> {
+  private async callAI(prompt: string, signal?: AbortSignal): Promise<string> {
     switch (this.config.provider) {
       case 'gemini':
-        return this.callWithRotation(prompt, (p, key) => this.callGemini(p, key));
+        return this.callWithRotation(prompt, (p, key) => this.callGemini(p, key, signal), signal);
       case 'groq':
-        return this.callWithRotation(prompt, (p, key) => this.callGroq(p, key));
+        return this.callWithRotation(prompt, (p, key) => this.callGroq(p, key, signal), signal);
       case 'openai':
-        return this.callWithRotation(prompt, (p, key) => this.callOpenAI(p, key));
+        return this.callWithRotation(prompt, (p, key) => this.callOpenAI(p, key, signal), signal);
       default:
         throw new Error(`Unsupported AI provider: ${this.config.provider}`);
     }
   }
 
-  private async callWithRotation(prompt: string, callFn: (p: string, key: string) => Promise<string>): Promise<string> {
+  private async callWithRotation(prompt: string, callFn: (p: string, key: string) => Promise<string>, signal?: AbortSignal): Promise<string> {
     const maxTotalRetries = Math.max(this.config.apiKeys.length * 2, 5);
     let attempts = 0;
 
     while (attempts < maxTotalRetries) {
+      if (signal?.aborted) throw new Error('Request aborted');
       try {
         return await callFn(prompt, this.currentApiKey);
       } catch (error) {
@@ -162,7 +164,7 @@ Focus on:
     throw new Error('All API keys rate limited or max retries exceeded');
   }
 
-  private async callGemini(prompt: string, apiKey: string): Promise<string> {
+  private async callGemini(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string> {
     const model = this.config.model || 'gemini-pro';
     const response = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
@@ -178,13 +180,14 @@ Focus on:
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey,
         },
+        signal
       }
     );
 
     return response.data.candidates[0]?.content?.parts[0]?.text || '';
   }
 
-  private async callGroq(prompt: string, apiKey: string): Promise<string> {
+  private async callGroq(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string> {
     const model = this.config.model || 'llama-3.3-70b-versatile';
     const response = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
@@ -199,13 +202,14 @@ Focus on:
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
+        signal
       }
     );
 
     return response.data.choices[0]?.message?.content || '';
   }
 
-  private async callOpenAI(prompt: string, apiKey: string): Promise<string> {
+  private async callOpenAI(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string> {
     const model = this.config.model || 'gpt-4';
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
@@ -220,6 +224,7 @@ Focus on:
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
+        signal
       }
     );
 

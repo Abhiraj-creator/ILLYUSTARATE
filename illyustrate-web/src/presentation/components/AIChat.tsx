@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import axios from 'axios'
 import type { Repository } from '@domain/entities/Repository'
 import type { ChatMessage } from '@shared/types'
 import { AIService } from '@infrastructure/ai/AIService'
@@ -94,8 +95,30 @@ export function AIChat({ repository }: AIChatProps) {
 
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [cancelRequested, setCancelRequested] = useState(false)
   const [typingMessageId, setTypingMessageId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const isGeneratingRef = useRef(false)
+
+  const cancelCurrent = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+      setCancelRequested(true)
+      setIsLoading(false)
+      isGeneratingRef.current = false
+    }
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [])
 
   // Save messages to session storage whenever they change
   useEffect(() => {
@@ -110,9 +133,12 @@ export function AIChat({ repository }: AIChatProps) {
     scrollToBottom()
   }, [messages])
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return
 
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading || isGeneratingRef.current) return
+
+    isGeneratingRef.current = true
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
@@ -123,6 +149,11 @@ export function AIChat({ repository }: AIChatProps) {
     setMessages((prev) => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
+    setCancelRequested(false)
+
+    // Create new abort controller for this request
+    const controller = new AbortController()
+    abortControllerRef.current = controller
 
     try {
       const aiService = getAIService()
@@ -142,7 +173,10 @@ export function AIChat({ repository }: AIChatProps) {
       const response = await aiService.chat({
         messages: [...messages, userMessage],
         context: { repositoryName: repository.fullName },
+        signal: controller.signal,
       })
+
+      if (controller.signal.aborted) return
 
       const messageId = `ai-${Date.now()}`
       setMessages((prev) => [...prev, {
@@ -152,7 +186,11 @@ export function AIChat({ repository }: AIChatProps) {
         timestamp: new Date(),
       }])
       setTypingMessageId(messageId)
-    } catch (error) {
+    } catch (error: any) {
+      if (axios.isCancel(error) || error.name === 'AbortError' || error.message === 'Request aborted') {
+        console.log('AI request cancelled')
+        return
+      }
       console.error('AI chat error:', error)
       const messageId = `ai-${Date.now()}`
       setMessages((prev) => [...prev, {
@@ -163,7 +201,11 @@ export function AIChat({ repository }: AIChatProps) {
       }])
       setTypingMessageId(messageId)
     } finally {
-      setIsLoading(false)
+      if (!controller.signal.aborted) {
+        setIsLoading(false)
+        isGeneratingRef.current = false
+        abortControllerRef.current = null
+      }
     }
   }
 
@@ -214,10 +256,19 @@ export function AIChat({ repository }: AIChatProps) {
                 <div className="flex items-center gap-2">
                   <span className="text-[#F5F5F7]/50 text-xs font-bold uppercase tracking-widest">System Architect</span>
                 </div>
-                <div className="bg-[#4a2040]/60 backdrop-blur-md rounded-xl rounded-tl-none px-5 py-4 text-[#F5F5F7] border border-[#C084FC]/10 flex gap-1.5 items-center">
-                  <div className="size-1.5 bg-[#C084FC]/60 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                  <div className="size-1.5 bg-[#C084FC]/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  <div className="size-1.5 bg-[#C084FC]/60 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                <div className="bg-[#4a2040]/60 backdrop-blur-md rounded-xl rounded-tl-none px-5 py-4 text-[#F5F5F7] border border-[#C084FC]/10 flex gap-4 items-center">
+                  <div className="flex gap-1.5 items-center">
+                    <div className="size-1.5 bg-[#C084FC]/60 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                    <div className="size-1.5 bg-[#C084FC]/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="size-1.5 bg-[#C084FC]/60 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                  </div>
+                  <button
+                    onClick={cancelCurrent}
+                    className="text-[10px] text-[#F5F5F7]/40 hover:text-red-400 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm">close</span>
+                    Cancel
+                  </button>
                 </div>
               </div>
             </div>
@@ -253,6 +304,16 @@ export function AIChat({ repository }: AIChatProps) {
           >
             <span className="material-symbols-outlined text-2xl">arrow_upward</span>
           </button>
+          {isLoading && (
+            <button
+              onClick={cancelCurrent}
+              title="Stop generating"
+              className="h-14 px-6 rounded-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shrink-0"
+            >
+              <span className="material-symbols-outlined text-xl">stop_circle</span>
+              <span className="font-bold uppercase tracking-wider text-xs hidden sm:inline">Stop</span>
+            </button>
+          )}
         </div>
         <div className="max-w-4xl mx-auto mt-3 flex justify-center">
           <p className="text-[10px] text-[#F5F5F7]/20 font-bold uppercase tracking-widest hidden sm:block">ILLYUSTRATE ENGINE v4.2 // SECURE ARCHITECTURE</p>
