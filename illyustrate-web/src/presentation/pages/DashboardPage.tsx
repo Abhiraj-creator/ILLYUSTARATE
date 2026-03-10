@@ -146,67 +146,99 @@ export function DashboardPage() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
   }
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased selection:bg-primary selection:text-white">
-      {/* Collapsed Sidebar */}
-      <aside className="w-20 bg-plum-deep flex flex-col items-center py-8 border-r border-[#5e2d52] h-full shrink-0 z-50">
-        <div className="mb-10">
-          <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased selection:bg-primary selection:text-white relative">
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar - Desktop and Mobile */}
+      <aside className={`fixed lg:static inset-y-0 left-0 w-64 lg:w-20 bg-plum-deep flex flex-col items-center py-8 border-r border-[#5e2d52] h-full shrink-0 z-[70] transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="mb-10 w-full flex flex-col items-center px-6">
+          <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 mb-4 lg:mb-0">
             <span className="material-symbols-outlined">auto_awesome</span>
           </div>
+          <span className="lg:hidden text-milk font-serif italic text-xl ml-3">ILLYUSTRATE</span>
         </div>
-        <nav className="flex flex-col gap-6 flex-1">
-          <div className="relative group">
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full"></div>
-            <button onClick={() => navigate('/dashboard')} className="size-12 rounded-xl bg-[#4a2040] text-primary flex items-center justify-center transition-colors cursor-pointer" title="Dashboard">
+
+        <nav className="flex flex-col gap-4 lg:gap-6 flex-1 w-full px-4 lg:px-0">
+          <div className="relative group w-full flex justify-center">
+            <div className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full"></div>
+            <button onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }} className="w-full lg:size-12 h-12 rounded-xl bg-[#4a2040] text-primary flex items-center lg:justify-center gap-3 px-4 lg:px-0 transition-colors cursor-pointer" title="Dashboard">
               <span className="material-symbols-outlined font-light">dashboard</span>
+              <span className="lg:hidden text-sm font-medium">Dashboard</span>
             </button>
           </div>
-          <button onClick={() => navigate('/settings')} className="size-12 rounded-xl text-slate-400 hover:bg-[#4a2040]/50 hover:text-slate-100 flex items-center justify-center transition-all cursor-pointer" title="Analysis Stats">
+          <button onClick={() => { navigate('/settings'); setIsMobileMenuOpen(false); }} className="w-full lg:size-12 h-12 rounded-xl text-slate-400 hover:bg-[#4a2040]/50 hover:text-slate-100 flex items-center lg:justify-center gap-3 px-4 lg:px-0 transition-all cursor-pointer" title="Analysis Stats">
             <span className="material-symbols-outlined font-light">analytics</span>
+            <span className="lg:hidden text-sm font-medium">Analytics</span>
           </button>
-          <button onClick={() => navigate('/settings')} className="size-12 rounded-xl text-slate-400 hover:bg-[#4a2040]/50 hover:text-slate-100 flex items-center justify-center transition-all cursor-pointer" title="Settings">
+          <button onClick={() => { navigate('/settings'); setIsMobileMenuOpen(false); }} className="w-full lg:size-12 h-12 rounded-xl text-slate-400 hover:bg-[#4a2040]/50 hover:text-slate-100 flex items-center lg:justify-center gap-3 px-4 lg:px-0 transition-all cursor-pointer" title="Settings">
             <span className="material-symbols-outlined font-light">settings</span>
+            <span className="lg:hidden text-sm font-medium">Settings</span>
           </button>
         </nav>
-        <div className="mt-auto">
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={handleAvatarChange}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUpdatingAvatar}
-            className={`size-10 rounded-full bg-[#4a2040] border border-[#5e2d52] overflow-hidden p-0.5 hover:scale-110 transition-transform cursor-pointer relative group ${isUpdatingAvatar ? 'opacity-50' : ''}`}
-            title="Update Profile Picture"
-          >
-            {user?.avatarUrl ? (
-              <div className="w-full h-full rounded-full bg-cover bg-center" style={{ backgroundImage: `url('${user.avatarUrl}')` }}></div>
-            ) : (
-              <div className="w-full h-full rounded-full bg-indigo-600 flex items-center justify-center text-sm font-medium text-white">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
-              </div>
-            )}
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="material-symbols-outlined text-white text-xs">edit</span>
-            </div>
+
+        <div className="mt-auto w-full px-4 lg:px-0 flex flex-col items-center gap-4">
+          <button onClick={() => signOut()} className="lg:hidden w-full flex items-center gap-3 px-4 h-12 rounded-xl text-red-100 bg-red-500/10 hover:bg-red-500/20 transition-colors">
+            <span className="material-symbols-outlined">logout</span>
+            <span className="text-sm font-medium">Sign Out</span>
           </button>
+          <div className="w-full flex justify-center py-4 lg:py-0">
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleAvatarChange}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUpdatingAvatar}
+              className={`size-10 rounded-full bg-[#4a2040] border border-[#5e2d52] overflow-hidden p-0.5 hover:scale-110 transition-transform cursor-pointer relative group ${isUpdatingAvatar ? 'opacity-50' : ''}`}
+              title="Update Profile Picture"
+            >
+              {user?.avatarUrl ? (
+                <div className="w-full h-full rounded-full bg-cover bg-center" style={{ backgroundImage: `url('${user.avatarUrl}')` }}></div>
+              ) : (
+                <div className="w-full h-full rounded-full bg-indigo-600 flex items-center justify-center text-sm font-medium text-white">
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="material-symbols-outlined text-white text-xs">edit</span>
+              </div>
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
         {/* Slim Top Navbar */}
-        <header className="h-16 glass-navbar border-b border-[#5e2d52] flex items-center justify-between px-8 sticky top-0 z-40">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative w-full max-w-md group">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+        <header className="h-16 glass-navbar border-b border-[#5e2d52] flex items-center justify-between px-4 sm:px-8 sticky top-0 z-40">
+          <div className="flex items-center gap-2 lg:gap-4 flex-1">
+            <button
+              className="lg:hidden p-2 text-slate-400 hover:text-milk transition-colors mr-1 shrink-0"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <span className="material-symbols-outlined text-2xl">menu</span>
+            </button>
+            <div className="relative w-full max-w-[200px] sm:max-w-md group">
+              <span className="material-symbols-outlined absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
               <input
-                className="w-full bg-[#2a1127]/50 border-none outline-none rounded-full py-2 pl-12 pr-4 text-sm text-slate-200 focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-slate-500 font-mono transition-shadow h-10"
-                placeholder="Search resources..."
+                className="w-full bg-[#2a1127]/50 border-none outline-none rounded-full py-2 pl-10 sm:pl-12 pr-4 text-xs sm:text-sm text-slate-200 focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-slate-500 font-mono transition-shadow h-9 sm:h-10"
+                placeholder="Search..."
                 type="text"
                 value={searchQuery}
                 onChange={(e) => {
@@ -217,7 +249,6 @@ export function DashboardPage() {
                   if (searchQuery.length > 0) setShowSearchSuggestions(true)
                 }}
                 onBlur={() => {
-                  // Small delay to allow clicking suggestions
                   setTimeout(() => setShowSearchSuggestions(false), 200)
                 }}
               />
@@ -228,7 +259,7 @@ export function DashboardPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-12 left-0 w-full bg-[#191022] border border-[#5e2d52] rounded-2xl shadow-2xl z-50 overflow-hidden py-2"
+                    className="absolute top-12 left-0 w-[280px] sm:w-full bg-[#191022] border border-[#5e2d52] rounded-2xl shadow-2xl z-50 overflow-hidden py-2"
                   >
                     {repositories.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 ? (
                       repositories
@@ -255,17 +286,13 @@ export function DashboardPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <span className="text-slate-500 text-xs font-mono cursor-blink"></span>
-              </div>
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-6">
             <div className="relative">
               <div
                 onClick={() => setShowNotifications(!showNotifications)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all cursor-pointer ${showNotifications ? 'bg-primary/20 border-primary/40 text-milk shadow-lg shadow-primary/10' : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5'}`}
+                className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-full border transition-all cursor-pointer ${showNotifications ? 'bg-primary/20 border-primary/40 text-milk shadow-lg shadow-primary/10' : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5'}`}
               >
                 <span className="material-symbols-outlined text-xl">notifications</span>
                 {showNotifications && <span className="absolute top-1 right-2 size-2 bg-primary rounded-full animate-pulse"></span>}
@@ -277,7 +304,7 @@ export function DashboardPage() {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute top-12 right-0 w-80 bg-[#191022] border border-[#5e2d52] rounded-2xl shadow-2xl z-50 overflow-hidden"
+                    className="absolute top-12 right-0 w-72 sm:w-80 bg-[#191022] border border-[#5e2d52] rounded-2xl shadow-2xl z-50 overflow-hidden"
                   >
                     <div className="px-5 py-4 border-b border-[#5e2d52] bg-[#2a1127]/30">
                       <h3 className="text-milk font-serif italic text-lg">System Telemetry</h3>
@@ -287,7 +314,7 @@ export function DashboardPage() {
                         <span className="material-symbols-outlined text-primary text-2xl">done_all</span>
                       </div>
                       <p className="text-milk text-sm mb-1">Ecosystem Stable</p>
-                      <p className="text-slate-500 text-xs">No active alerts or queued notifications at this cycle.</p>
+                      <p className="text-slate-500 text-xs">No active alerts at this cycle.</p>
                     </div>
                   </motion.div>
                 )}
@@ -296,13 +323,13 @@ export function DashboardPage() {
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-primary hover:bg-primary/90 text-white px-5 h-10 rounded-full text-sm font-bold tracking-tight transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 cursor-pointer"
+              className="bg-primary hover:bg-primary/90 text-white px-3 sm:px-5 h-9 sm:h-10 rounded-full text-xs sm:text-sm font-bold tracking-tight transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 cursor-pointer shrink-0"
             >
               <span className="material-symbols-outlined text-sm">add</span>
-              Add Repository
+              <span className="hidden xs:inline">Add Repo</span>
             </button>
-            <div className="h-6 w-px bg-slate-700 hidden sm:block"></div>
-            <button onClick={() => signOut()} className="flex items-center gap-2 px-2 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer">
+            <div className="h-6 w-px bg-slate-700 hidden md:block"></div>
+            <button onClick={() => signOut()} className="hidden md:flex items-center gap-2 px-2 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer">
               <span className="material-symbols-outlined text-[20px]">logout</span>
             </button>
           </div>
@@ -400,8 +427,8 @@ export function DashboardPage() {
                       <p className="text-slate-400 text-sm max-w-sm line-clamp-2">{repo.description || "No creative statement provided."}</p>
                     </div>
 
-                    <div className={`relative z-10 flex ${idx === 0 ? 'items-center justify-between mt-8 pt-6 border-t border-[#5e2d52]/50' : 'items-end justify-between mt-6'} `}>
-                      <div className="flex items-center gap-4 font-mono text-xs text-slate-400">
+                    <div className={`relative z-10 flex ${idx === 0 ? 'flex-col sm:flex-row sm:items-center sm:justify-between mt-8 pt-6 border-t border-[#5e2d52]/50' : 'items-end justify-between mt-6'} `}>
+                      <div className="flex items-center gap-4 font-mono text-[10px] text-slate-400 mb-4 sm:mb-0">
                         <div className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-[14px]">star</span>
                           <span>{repo.stars.toLocaleString()}</span>
@@ -413,7 +440,7 @@ export function DashboardPage() {
                       </div>
 
                       {idx === 0 && (
-                        <div className="text-milk group-hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
+                        <div className="text-milk group-hover:text-primary transition-colors flex items-center gap-1 text-xs sm:text-sm font-medium">
                           View Protocol <span className="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">arrow_outward</span>
                         </div>
                       )}

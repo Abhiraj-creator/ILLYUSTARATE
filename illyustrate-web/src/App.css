@@ -20,6 +20,8 @@
   --color-brand-lavender: #7B4FA6;
   --color-brand-milk: #f7f6f8;
 
+  --breakpoint-xs: 480px;
+
   --font-display: "Manrope", sans-serif;
   --font-serif: "Playfair Display", serif;
   --font-playfair: "Playfair Display", serif;

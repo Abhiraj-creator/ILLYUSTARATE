@@ -91,56 +91,57 @@ export function RepositoryPage() {
       <div className={`flex-1 flex flex-col h-full relative z-10 w-full transition-all duration-300 ${activeTab === 'graph' ? 'lg:pr-80' : ''}`}>
 
         {/* Navbar (Sticky) */}
-        <header className="h-16 glass-navbar border-b border-[#5e2d52] flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-8 z-40 relative">
+        <header className="min-h-[4rem] lg:h-16 glass-navbar border-b border-[#5e2d52] flex flex-col lg:flex-row lg:items-center justify-between px-4 sm:px-8 z-40 relative py-3 lg:py-0 gap-3">
 
-          {/* Breadcrumbs */}
-          <div className="flex items-center gap-3 py-2 sm:py-0">
+          {/* Breadcrumbs & Navigation */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 max-w-full overflow-hidden">
             <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer group shrink-0">
               <span className="material-symbols-outlined text-lg transition-transform group-hover:-translate-x-1">arrow_back</span>
             </button>
-            <div className="h-4 w-px bg-slate-700 mx-1"></div>
-            <div className="flex items-center gap-2 overflow-hidden">
-              <span className="material-symbols-outlined text-[#C084FC] text-lg shrink-0">code_blocks</span>
-              <div className="font-serif italic text-milk text-lg truncate flex-1 min-w-0 flex space-x-1.5 items-baseline">
-                <span className="opacity-60">{owner}</span>
-                <span className="opacity-40 text-sm">/</span>
-                <span className="font-bold">{name}</span>
+            <div className="h-4 w-px bg-slate-700 mx-0.5 sm:mx-1 shrink-0"></div>
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-hidden min-w-0">
+              <span className="material-symbols-outlined text-[#C084FC] text-base sm:text-lg shrink-0">code_blocks</span>
+              <div className="font-serif italic text-milk text-sm sm:text-lg truncate flex items-center space-x-1 sm:space-x-1.5 min-w-0">
+                <span className="opacity-60 truncate max-w-[80px] sm:max-w-none">{owner}</span>
+                <span className="opacity-40 text-xs sm:text-sm shrink-0">/</span>
+                <span className="font-bold truncate">{name}</span>
               </div>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar sm:-mb-0 -mb-2 pb-2 sm:pb-0 h-full">
+          <div className="flex items-center gap-0.5 overflow-x-auto custom-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0 h-9 sm:h-10 lg:h-full scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`h-full flex items-center gap-2 px-4 border-b-2 text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
+                className={`h-full flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 border-b-2 text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
                   ? 'border-primary text-primary bg-primary/10'
                   : 'border-transparent text-slate-400 hover:text-milk hover:bg-white/5'
                   }`}
               >
-                <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
-                {tab.label}
+                <span className="material-symbols-outlined text-[16px] sm:text-[18px]">{tab.icon}</span>
+                <span className="hidden xs:inline">{tab.label}</span>
+                <span className="xs:hidden uppercase">{tab.id}</span>
               </button>
             ))}
           </div>
 
           {/* Analyze Status Area */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 shrink-0 lg:ml-2">
             {!repo.isAnalyzed && !repo.isAnalyzing && (
               <button
                 onClick={handleAnalyze}
                 disabled={isLoading}
-                className="bg-primary hover:bg-primary/90 text-white px-4 h-8 rounded-full text-xs font-bold tracking-tight shadow-lg shadow-primary/20 flex items-center gap-2 transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 text-white px-3 sm:px-4 h-8 rounded-full text-[10px] sm:text-xs font-bold tracking-tight shadow-lg shadow-primary/20 flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
               >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="material-symbols-outlined text-[16px]">sync</span>}
-                RUN ANALYSIS
+                {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span className="material-symbols-outlined text-[16px]">sync</span>}
+                <span className="whitespace-nowrap">ANALYZE</span>
               </button>
             )}
             {repo.isAnalyzing && (
-              <span className="text-primary text-xs font-mono font-bold flex items-center gap-2 px-6">
-                <Loader2 className="w-4 h-4 animate-spin" /> ANALYZING...
+              <span className="text-primary text-[10px] sm:text-xs font-mono font-bold flex items-center gap-1.5">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> <span className="hidden sm:inline">ANALYZING...</span>
               </span>
             )}
           </div>

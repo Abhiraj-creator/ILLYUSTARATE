@@ -90,15 +90,16 @@ export function SettingsPage() {
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full pointer-events-none"></div>
 
       {/* Top Navbar */}
-      <header className="h-16 glass-navbar border-b border-[#5e2d52] flex items-center justify-between px-8 sticky top-0 z-40">
-        <div className="flex items-center gap-6 flex-1">
+      <header className="min-h-[4rem] h-auto lg:h-16 glass-navbar border-b border-[#5e2d52] flex items-center justify-between px-4 sm:px-8 sticky top-0 z-40 py-2 sm:py-0">
+        <div className="flex items-center gap-4 sm:gap-6 flex-1">
           <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer group">
             <span className="material-symbols-outlined text-lg transition-transform group-hover:-translate-x-1">arrow_back</span>
-            <span className="text-sm font-medium font-serif italic">Back to Dashboard</span>
+            <span className="text-sm font-medium font-serif italic hidden xs:inline">Back to Dashboard</span>
+            <span className="text-sm font-medium font-serif italic xs:hidden">Back</span>
           </button>
         </div>
         <div className="flex items-center gap-6">
-          <button onClick={() => signOut()} className="flex items-center gap-2 px-2 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer">
+          <button onClick={() => signOut()} className="flex items-center gap-2 px-2 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer" title="Sign Out">
             <span className="material-symbols-outlined text-[20px]">logout</span>
           </button>
         </div>

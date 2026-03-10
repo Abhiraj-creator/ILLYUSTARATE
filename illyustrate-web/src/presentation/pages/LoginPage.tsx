@@ -17,6 +17,7 @@ export function LoginPage() {
   })
   const [formError, setFormError] = useState<string | null>(null)
   const [formLoading, setFormLoading] = useState(false)
+  const [isLoginVisible, setIsLoginVisible] = useState(false)
   const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-[#191022] text-slate-100 font-display selection:bg-[#7f13ec] selection:text-white">
+    <div className="flex flex-col lg:flex-row min-h-screen w-full bg-[#191022] text-slate-100 font-display selection:bg-[#7f13ec] selection:text-white overflow-x-hidden">
       <style>{`
         .mesh-gradient {
             background-color: #381932;
@@ -72,16 +73,28 @@ export function LoginPage() {
         }
       `}</style>
 
-      <aside className="hidden lg:flex lg:w-[40%] mesh-gradient border-r border-white/5 flex-col p-12 relative overflow-hidden">
-        <div className="flex items-center gap-3 mb-16 z-10">
-          <div className="relative flex items-center justify-center size-10 bg-[#7B4FA6]/20 rounded-lg border border-[#7B4FA6]/50 shadow-[0_0_15px_rgba(123,79,166,0.4)]">
-            <span className="material-symbols-outlined text-[#C084FC] text-2xl">hexagon</span>
+      {/* Login Sidebar - Desktop (Fixed) / Mobile (Slide-in or conditional) */}
+      <aside className={`
+        ${isLoginVisible ? 'flex' : 'hidden lg:flex'}
+        fixed lg:static inset-0 lg:w-[40%] mesh-gradient border-r border-white/5 flex-col p-8 sm:p-12 z-50 overflow-y-auto
+      `}>
+        <div className="flex items-center justify-between lg:justify-start gap-3 mb-12 sm:mb-16">
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center justify-center size-10 bg-[#7B4FA6]/20 rounded-lg border border-[#7B4FA6]/50 shadow-[0_0_15px_rgba(123,79,166,0.4)]">
+              <span className="material-symbols-outlined text-[#C084FC] text-2xl">hexagon</span>
+            </div>
+            <h1 className="text-[#fff3e6] font-bold text-2xl tracking-tight uppercase italic">{APP_NAME}</h1>
           </div>
-          <h1 className="text-[#fff3e6] font-bold text-2xl tracking-tight uppercase italic">{APP_NAME}</h1>
+          <button
+            onClick={() => setIsLoginVisible(false)}
+            className="lg:hidden size-10 rounded-full bg-white/5 flex items-center justify-center text-[#fff3e6]/60 hover:text-white"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full z-10">
-          <div className="mb-8">
+        <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
+          <div className="mb-8 text-center lg:text-left">
             <h2 className="text-3xl font-playfair text-[#fff3e6] mb-2">Welcome Back</h2>
             <p className="text-[#fff3e6]/60 font-lora italic">Enter your credentials to access the grid.</p>
           </div>
@@ -89,15 +102,13 @@ export function LoginPage() {
           <div className="bg-black/20 p-1 rounded-full flex mb-8 border border-white/5">
             <button
               onClick={() => setActiveTab('login')}
-              className={`flex-1 py-2 px-6 rounded-full text-sm font-bold transition-all ${activeTab === 'login' ? 'bg-[#7B4FA6] text-white shadow-lg' : 'text-[#fff3e6]/60 hover:text-[#fff3e6]'
-                }`}
+              className={`flex-1 py-2 px-6 rounded-full text-sm font-bold transition-all ${activeTab === 'login' ? 'bg-[#7B4FA6] text-white shadow-lg' : 'text-[#fff3e6]/60 hover:text-[#fff3e6]'}`}
             >
               Sign In
             </button>
             <button
               onClick={() => setActiveTab('signup')}
-              className={`flex-1 py-2 px-6 rounded-full text-sm font-bold transition-all ${activeTab === 'signup' ? 'bg-[#7B4FA6] text-white shadow-lg' : 'text-[#fff3e6]/60 hover:text-[#fff3e6]'
-                }`}
+              className={`flex-1 py-2 px-6 rounded-full text-sm font-bold transition-all ${activeTab === 'signup' ? 'bg-[#7B4FA6] text-white shadow-lg' : 'text-[#fff3e6]/60 hover:text-[#fff3e6]'}`}
             >
               Sign Up
             </button>
@@ -200,28 +211,21 @@ export function LoginPage() {
           </div>
         </div>
 
-        <footer className="mt-auto z-10 pt-8">
+        <footer className="mt-8 lg:mt-auto pt-8 pb-4">
           <p className="text-[11px] font-mono text-[#fff3e6]/20 uppercase tracking-[0.2em]">© 2024 ILLYUSTRATE Labs / Secure Authentication</p>
         </footer>
       </aside>
 
-      <main className="w-full lg:w-[60%] blurred-bg relative flex flex-col p-8 sm:p-20 justify-center">
-        {/* Mobile Header */}
-        <div className="lg:hidden flex items-center gap-3 mb-12 z-10">
-          <div className="relative flex items-center justify-center size-10 bg-[#7B4FA6]/20 rounded-lg border border-[#7B4FA6]/50 shadow-[0_0_15px_rgba(123,79,166,0.4)]">
-            <span className="material-symbols-outlined text-[#C084FC] text-2xl">hexagon</span>
-          </div>
-          <h1 className="text-[#fff3e6] font-bold text-2xl tracking-tight uppercase italic">{APP_NAME}</h1>
-        </div>
-
+      {/* Main Marketing View - Mobile (Visible by default) / Desktop (Right side) */}
+      <main className="w-full lg:w-[60%] blurred-bg relative flex flex-col p-8 sm:p-20 justify-center min-h-screen">
         <div className="max-w-3xl">
-          <h2 className="text-4xl sm:text-6xl font-playfair text-[#fff3e6] leading-tight mb-16">
+          <h2 className="text-4xl sm:text-6xl font-playfair text-[#fff3e6] leading-tight mb-12 sm:mb-16">
             Why developers love <br />
             <span className="italic text-[#7B4FA6] uppercase">{APP_NAME}</span>
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 relative">
-            <div className="bg-[#4a2040]/40 border border-white/5 p-8 rounded-2xl backdrop-blur-sm transform hover:-translate-y-2 transition-all duration-500">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 relative">
+            <div className="bg-[#4a2040]/40 border border-white/5 p-6 sm:p-8 rounded-2xl backdrop-blur-sm transform hover:-translate-y-2 transition-all duration-500">
               <div className="size-12 bg-[#7B4FA6]/20 rounded-lg flex items-center justify-center mb-6">
                 <span className="material-symbols-outlined text-[#7B4FA6]">account_tree</span>
               </div>
@@ -229,7 +233,7 @@ export function LoginPage() {
               <p className="text-[#fff3e6]/50 font-lora leading-relaxed text-sm">Visualize your entire repository architecture in 3D node-based environments. Understand dependencies instantly.</p>
             </div>
 
-            <div className="bg-[#4a2040]/40 border border-white/5 p-8 rounded-2xl backdrop-blur-sm transform sm:translate-y-12 hover:-translate-y-2 transition-all duration-500">
+            <div className="bg-[#4a2040]/40 border border-white/5 p-6 sm:p-8 rounded-2xl backdrop-blur-sm transform sm:translate-y-12 hover:-translate-y-2 transition-all duration-500">
               <div className="size-12 bg-[#7B4FA6]/20 rounded-lg flex items-center justify-center mb-6">
                 <span className="material-symbols-outlined text-[#7B4FA6]">auto_awesome</span>
               </div>
@@ -237,7 +241,7 @@ export function LoginPage() {
               <p className="text-[#fff3e6]/50 font-lora leading-relaxed text-sm">Living documentation that updates itself with every PR. Never worry about stale READMEs again.</p>
             </div>
 
-            <div className="bg-[#4a2040]/40 border border-white/5 p-8 rounded-2xl backdrop-blur-sm transform sm:-translate-y-6 hover:-translate-y-2 transition-all duration-500">
+            <div className="bg-[#4a2040]/40 border border-white/5 p-6 sm:p-8 rounded-2xl backdrop-blur-sm transform sm:-translate-y-6 hover:-translate-y-2 transition-all duration-500">
               <div className="size-12 bg-[#7B4FA6]/20 rounded-lg flex items-center justify-center mb-6">
                 <span className="material-symbols-outlined text-[#7B4FA6]">forum</span>
               </div>
@@ -245,7 +249,7 @@ export function LoginPage() {
               <p className="text-[#fff3e6]/50 font-lora leading-relaxed text-sm">Context-aware LLM that knows your specific logic, folder structures, and hidden technical debt.</p>
             </div>
 
-            <div className="bg-[#4a2040]/40 border border-white/5 p-8 rounded-2xl backdrop-blur-sm transform sm:translate-y-6 hover:-translate-y-2 transition-all duration-500">
+            <div className="bg-[#4a2040]/40 border border-white/5 p-6 sm:p-8 rounded-2xl backdrop-blur-sm transform sm:translate-y-6 hover:-translate-y-2 transition-all duration-500">
               <div className="size-12 bg-[#7B4FA6]/20 rounded-lg flex items-center justify-center mb-6">
                 <span className="material-symbols-outlined text-[#7B4FA6]">language</span>
               </div>
@@ -255,7 +259,7 @@ export function LoginPage() {
           </div>
         </div>
 
-        <div className="absolute bottom-10 right-10 hidden sm:flex items-center gap-6 opacity-30">
+        <div className="mt-16 lg:mt-0 lg:absolute lg:bottom-10 lg:right-10 flex items-center gap-6 opacity-30 pb-24 lg:pb-0">
           <div className="flex -space-x-3">
             <div className="size-10 rounded-full border-2 border-[#191022] bg-indigo-500"></div>
             <div className="size-10 rounded-full border-2 border-[#191022] bg-emerald-500"></div>
@@ -263,19 +267,17 @@ export function LoginPage() {
           </div>
           <p className="text-xs font-mono uppercase tracking-widest text-[#fff3e6]">Joined by 12k+ engineers</p>
         </div>
+
+        {/* Mobile-only sticky bottom button */}
+        <div className="lg:hidden fixed bottom-0 inset-x-0 p-6 bg-gradient-to-t from-[#191022] to-transparent pointer-events-none">
+          <button
+            onClick={() => setIsLoginVisible(true)}
+            className="w-full h-14 rounded-xl bg-gradient-to-r from-[#7B4FA6] to-[#C084FC] text-white font-bold text-lg shadow-2xl pointer-events-auto active:scale-95 transition-transform"
+          >
+            Proceed to Login
+          </button>
+        </div>
       </main>
-
-      {/* Mobile Login Button overlay for small screens to show the form at bottoms */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background-dark/80 backdrop-blur-lg border-t border-white/10 z-50">
-        <button className="w-full h-14 rounded-xl bg-gradient-to-r from-[#7B4FA6] to-[#C084FC] text-white font-bold text-lg shadow-xl shadow-[#7B4FA6]/20" onClick={() => {
-          window.scrollTo({ top: 0, behavior: 'smooth' })
-          // Note: in a real app, this might open a modal on mobile, but for now we just scroll to top where the form could be
-          // Actually, we've hidden the form completely on mobile! Let's display it inline.
-        }}>
-          Proceed to Login
-        </button>
-      </div>
-
     </div>
   )
 }

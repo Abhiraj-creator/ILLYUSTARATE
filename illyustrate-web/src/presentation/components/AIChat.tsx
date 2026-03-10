@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import type { Repository } from '@domain/entities/Repository'
 import type { ChatMessage } from '@shared/types'
@@ -36,14 +36,22 @@ function useTypewriter(text: string, speed: number = 15, isActive: boolean = tru
   const [isComplete, setIsComplete] = useState(false)
   const indexRef = useRef(0)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const onCharTypedRef = useRef(onCharTyped)
+
+  // Keep callback ref updated without triggering effect
+  useEffect(() => {
+    onCharTypedRef.current = onCharTyped
+  }, [onCharTyped])
 
   useEffect(() => {
+    // If not active, immediately show full text
     if (!isActive) {
       setDisplayedText(text)
       setIsComplete(true)
       return
     }
 
+    // Reset state for new typing session
     setDisplayedText('')
     setIsComplete(false)
     indexRef.current = 0
@@ -53,7 +61,7 @@ function useTypewriter(text: string, speed: number = 15, isActive: boolean = tru
         const nextChar = text[indexRef.current]
         setDisplayedText(prev => prev + nextChar)
         indexRef.current++
-        if (onCharTyped) onCharTyped()
+        if (onCharTypedRef.current) onCharTypedRef.current()
         const delay = nextChar === ' ' ? speed : nextChar === '\n' ? speed * 3 : speed + Math.random() * 5
         timeoutRef.current = setTimeout(typeNextChar, delay)
       } else {
@@ -63,13 +71,13 @@ function useTypewriter(text: string, speed: number = 15, isActive: boolean = tru
 
     timeoutRef.current = setTimeout(typeNextChar, speed)
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }
-  }, [text, speed, isActive, onCharTyped])
+  }, [text, speed, isActive]) // onCharTyped removed from deps
 
   return { displayedText, isComplete }
 }
 
 export function AIChat({ repository }: AIChatProps) {
-  const { user } = useAuthStore()
+  const user = useAuthStore(state => state.user)
 
   // Use session storage to persist chat messages across tab switches
   const storageKey = `chat_history_${repository.id}`
@@ -125,13 +133,14 @@ export function AIChat({ repository }: AIChatProps) {
     sessionStorage.setItem(storageKey, JSON.stringify(messages))
   }, [messages, storageKey])
 
-  const scrollToBottom = () => {
+  // Memoize scrollToBottom to keep reference stable
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  }, [])
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, scrollToBottom])
 
 
 
@@ -216,9 +225,13 @@ export function AIChat({ repository }: AIChatProps) {
     }
   }
 
-  const formatTime = (date: Date) => {
+  const formatTime = useCallback((date: Date) => {
     return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric' }).format(date)
-  }
+  }, [])
+
+  const handleTypingComplete = useCallback(() => {
+    setTypingMessageId(null)
+  }, [])
 
   return (
     <div className="flex-1 flex flex-col bg-[#381932] relative overflow-hidden h-full rounded-2xl md:rounded-r-2xl border border-[#4a2040]/50 shadow-inner group-hover/parent:border-[#C084FC]/30 transition-colors">
@@ -241,7 +254,7 @@ export function AIChat({ repository }: AIChatProps) {
               key={message.id}
               message={message}
               isTyping={typingMessageId === message.id}
-              onTypingComplete={() => setTypingMessageId(null)}
+              onTypingComplete={handleTypingComplete}
               formatTime={formatTime}
               user={user}
               onType={scrollToBottom}
@@ -278,52 +291,52 @@ export function AIChat({ repository }: AIChatProps) {
       </main>
 
       {/* Bottom Input Area */}
-      <footer className="bg-[#191022]/80 backdrop-blur-lg border-t border-[#4a2040]/40 p-6 shrink-0 z-20">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
+      <footer className="bg-[#191022]/80 backdrop-blur-lg border-t border-[#4a2040]/40 p-4 sm:p-6 shrink-0 z-20">
+        <div className="max-w-4xl mx-auto flex items-center gap-2 sm:gap-4">
           <div className="relative flex-1 group rounded-full transition-all duration-300 focus-within:shadow-[0_0_15px_rgba(192,132,252,0.3)]">
-            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[#F5F5F7]/30 group-focus-within:text-[#C084FC] transition-colors pointer-events-none">
-              <span className="material-symbols-outlined">attach_file</span>
+            <div className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-[#F5F5F7]/30 group-focus-within:text-[#C084FC] transition-colors pointer-events-none">
+              <span className="material-symbols-outlined text-sm sm:text-base">attach_file</span>
             </div>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
-              className="w-full h-14 bg-[#4a2040] pl-14 pr-14 rounded-full border border-[#C084FC]/10 text-[#F5F5F7] placeholder-[#F5F5F7]/30 focus:outline-none focus:border-[#C084FC]/40 transition-all font-medium disabled:opacity-50"
+              className="w-full h-11 sm:h-14 bg-[#4a2040] pl-10 sm:pl-14 pr-10 sm:pr-14 rounded-full border border-[#C084FC]/10 text-[#F5F5F7] placeholder-[#F5F5F7]/30 focus:outline-none focus:border-[#C084FC]/40 transition-all font-medium text-xs sm:text-sm disabled:opacity-50"
               placeholder="Ask about your codebase..."
               type="text"
             />
-            <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[#F5F5F7]/30 hover:text-[#C084FC] cursor-pointer transition-colors pt-1.5">
-              <span className="material-symbols-outlined">mic</span>
+            <div className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 text-[#F5F5F7]/30 hover:text-[#C084FC] cursor-pointer transition-colors pt-1">
+              <span className="material-symbols-outlined text-sm sm:text-base">mic</span>
             </div>
           </div>
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="h-14 w-14 rounded-full bg-gradient-to-br from-[#7f13ec] via-[#7f13ec] to-[#C084FC] flex items-center justify-center text-[#F5F5F7] shadow-lg shadow-[#C084FC]/10 hover:shadow-[#C084FC]/30 hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed cursor-pointer shrink-0"
+            className="h-11 sm:h-14 w-11 sm:w-14 rounded-full bg-gradient-to-br from-[#7f13ec] via-[#7f13ec] to-[#C084FC] flex items-center justify-center text-[#F5F5F7] shadow-lg shadow-[#C084FC]/10 hover:shadow-[#C084FC]/30 hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed cursor-pointer shrink-0"
           >
-            <span className="material-symbols-outlined text-2xl">arrow_upward</span>
+            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_upward</span>
           </button>
           {isLoading && (
             <button
               onClick={cancelCurrent}
               title="Stop generating"
-              className="h-14 px-6 rounded-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="h-11 sm:h-14 px-3 sm:px-6 rounded-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shrink-0"
             >
               <span className="material-symbols-outlined text-xl">stop_circle</span>
-              <span className="font-bold uppercase tracking-wider text-xs hidden sm:inline">Stop</span>
+              <span className="font-bold uppercase tracking-wider text-[10px] hidden sm:inline">Stop</span>
             </button>
           )}
         </div>
-        <div className="max-w-4xl mx-auto mt-3 flex justify-center">
-          <p className="text-[10px] text-[#F5F5F7]/20 font-bold uppercase tracking-widest hidden sm:block">ILLYUSTRATE ENGINE v4.2 // SECURE ARCHITECTURE</p>
+        <div className="max-w-4xl mx-auto mt-2 sm:mt-3 flex justify-center">
+          <p className="text-[8px] sm:text-[10px] text-[#F5F5F7]/20 font-bold uppercase tracking-widest">ILLYUSTRATE ENGINE v4.2 // SECURE ARCHITECTURE</p>
         </div>
       </footer>
     </div>
   )
 }
 
-function MessageBubble({ message, isTyping, onTypingComplete, formatTime, user, onType }: any) {
+const MessageBubble = React.memo(({ message, isTyping, onTypingComplete, formatTime, user, onType }: any) => {
   const { displayedText, isComplete } = useTypewriter(
     message.content,
     12,
@@ -377,4 +390,4 @@ function MessageBubble({ message, isTyping, onTypingComplete, formatTime, user, 
       </div>
     </div>
   )
-}
+})
